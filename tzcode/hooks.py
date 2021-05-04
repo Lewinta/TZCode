@@ -35,11 +35,19 @@ app_license = "MIT"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_list_js = {
-	"Customer" : "public/js/customer_list.js"
+	"Customer" : "public/js/customer_list.js",
+	"User" : "public/js/user.js",
+	"Task" : "public/js/task.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+app_logo_url = "/assets/tzcode/images/blue_logo.svg"
+
+website_context = {
+    "favicon": 	"/assets/tzcode/images/favicon.ico",
+	"splash_image": "/assets/tzcode/images/blue_logo.svg"
+}
 # Home Pages
 # ----------
 
@@ -93,13 +101,14 @@ doctype_list_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"User": {
+		"validate": "tzcode.hook.user.validate",
+	},
+	"Task": {
+		"validate": "tzcode.hook.task.validate",
+	}
+}
 
 # Scheduled Tasks
 # ---------------
