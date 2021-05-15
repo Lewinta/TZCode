@@ -107,6 +107,18 @@ doc_events = {
 	},
 	"Task": {
 		"validate": "tzcode.hook.task.validate",
+	},
+	"Sales Invoice": {
+		"on_cancel": "tzcode.hook.sales_invoice.on_cancel",
+		"on_trash": "tzcode.hook.sales_invoice.on_trash",
+	},
+	"Purchase Invoice": {
+		"on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
+		"on_trash": "tzcode.hook.purchase_invoice.on_trash",
+	},
+	"Journal Entry": {
+		"on_cancel": "tzcode.hook.journal_entry.on_cancel",
+		"on_trash": "tzcode.hook.journal_entry.on_trash",
 	}
 }
 
