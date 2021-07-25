@@ -33,7 +33,10 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"Payroll Entry" : "public/js/payroll_entry.js",
+	"Purchase Invoice" : "public/js/purchase_invoice.js"
+}
 doctype_list_js = {
 	"Customer" : "public/js/customer_list.js",
 	"User" : "public/js/user.js",
@@ -45,7 +48,7 @@ doctype_list_js = {
 app_logo_url = "/assets/tzcode/images/blue_logo.svg"
 
 website_context = {
-    "favicon": 	"/assets/tzcode/images/favicon.ico",
+    "favicon": 	"/assets/tzcode/images/favicon.png",
 	"splash_image": "/assets/tzcode/images/blue_logo.svg"
 }
 # Home Pages
@@ -97,6 +100,13 @@ website_context = {
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
+
+# Jinja
+# ---------------
+
+jenv = {
+	"methods": ["get_employee_salary:tzcode.jinja.methods.get_employee_salary"]
+}
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -111,6 +121,9 @@ doc_events = {
 	"Sales Invoice": {
 		"on_cancel": "tzcode.hook.sales_invoice.on_cancel",
 		"on_trash": "tzcode.hook.sales_invoice.on_trash",
+	},
+	"Sales Order": {
+		"validate": "tzcode.hook.sales_order.validate",
 	},
 	"Purchase Invoice": {
 		"on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
@@ -166,6 +179,7 @@ doc_events = {
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
+after_migrate = "tzcode.utils.migrate.after_migrate"
 
 # User Data Protection
 # --------------------
