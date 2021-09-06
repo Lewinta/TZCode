@@ -1,8 +1,28 @@
 import frappe
+from tzcode.utils.permission_manager import UserPermission
 
 def after_migrate():
-	pass
+	add_permissions()
 	# create_views()
+
+def add_permissions():
+	PM = UserPermission.create_perms
+	# Read permissions are implicit
+	
+	# Bank
+	PM('Bank', 'System Manager',  {'if_owner', 'set_user_permissions'}, inverse=True)
+	PM('Bank', 'Accounts Manager',  {'write', 'create', 'export'})
+
+	# Support Settings
+	PM('Support Settings', 'Support Team')
+	
+	#Customer
+	PM('Customer', 'Stock User')
+	PM('Customer', 'Stock Manager')
+	PM('Customer', 'Accounts Manager')
+
+	#ToDo
+	PM('ToDo', 'Support Team', {'write', 'create', 'report'})
 
 def create_views():
 	frappe.db.sql("drop view if exists `viewStatement`")

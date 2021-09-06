@@ -15,6 +15,7 @@ def get_columns():
 		_("Invoice") 			+ ":Link/Sales Invoice:120",
 		_("Date") 				+ ":Date:100",
 		_("Customer") 			+ ":Data:200",
+		_("NCF") 				+ ":Data:110",
 		_("Reference") 			+ ":Data:180",
 		_("Neto")		 		+ ":Currency/currency:100",
 		_("Dias")	 			+ ":Data:60",
@@ -52,6 +53,7 @@ def get_data(filters):
 				`viewStatement`.name,
 				`viewStatement`.posting_date,
 				`viewStatement`.customer,
+				`viewStatement`.ncf,
 				`viewStatement`.remarks,
 				`viewStatement`.base_total,
 				DATEDIFF(`viewStatement`.posting_date, CURDATE() ) as days,
@@ -66,7 +68,7 @@ def get_data(filters):
 			WHERE
 				{conditions}
 			ORDER BY 
-				`viewStatement`.posting_date
+				`viewStatement`.posting_date desc
 		""".format(conditions=get_conditions(filters)), as_dict=True, debug=False)
 	
 	elif filters.get("currency") == "Invoice Currency":
@@ -75,6 +77,7 @@ def get_data(filters):
 				`viewStatement`.name,
 				`viewStatement`.posting_date,
 				`viewStatement`.customer,
+				`viewStatement`.ncf,
 				`viewStatement`.remarks,
 				`viewStatement`.total as base_total,
 				DATEDIFF(`viewStatement`.posting_date, CURDATE() ) as days,
@@ -99,6 +102,7 @@ def get_data(filters):
 					row.name,
 					row.posting_date,
 					row.customer,
+					row.ncf,
 					row.remarks,
 					row.base_total,
 					row.days,
