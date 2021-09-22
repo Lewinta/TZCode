@@ -93,7 +93,7 @@ fixtures = [
 		}
 	},
 	{
-		"doctype": "Purchase Invoice",
+		"doctype": "Print Format",
 		"filters": {
 			"name": (
 				"in", (

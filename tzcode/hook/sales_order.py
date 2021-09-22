@@ -6,7 +6,7 @@ def validate(doc, method):
     get_default_remarks(doc)
 
 def get_default_remarks(doc):
-    if not doc.auto_repeat:
+    if not doc.auto_repeat or doc.remarks:
         return
     last_month = add_months(nowdate(), -1)
     year, month, day = last_month.split("-")
