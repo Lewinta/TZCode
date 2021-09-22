@@ -12,19 +12,21 @@ def execute(filters=None):
 def get_columns():
 	"""return columns based on filters"""
 	columns = [
-		_("Invoice") 			+ ":Link/Sales Invoice:120",
-		_("Date") 				+ ":Date:100",
+		_("Invoice") 			+ ":Link/Sales Invoice:110",
+		_("Date") 				+ ":Date:95",
 		_("Customer") 			+ ":Data:200",
 		_("NCF") 				+ ":Data:110",
-		_("Reference") 			+ ":Data:180",
+		_("Reference") 			+ ":Data:130",
 		_("Neto")		 		+ ":Currency/currency:100",
-		_("Dias")	 			+ ":Data:60",
-		_("%")	 				+ ":Data:60",
-		_("Descuento")	 		+ ":Currency/currency:90",
+		# _("Dias")	 			+ ":Data:60",
+		# _("%")	 				+ ":Data:60",
+		# _("Descuento")	 		+ ":Currency/currency:90",
 		_("ITBIS")	 			+ ":Currency/currency:90",
 		_("Bruto")	 	+ ":Currency/currency:100",
 		_("Pagado")	 	+ ":Currency/currency:100",
-		_("Pendiente")	+ ":Currency/currency:100",
+		_("Ult. Pago")	 	+ ":Date:95",
+		_("Documento")	 	+ ":Link/Journal Entry:170",
+		_("Pendiente")	+ ":Currency/Currency:100",
 	]
 	
 	return columns
@@ -55,21 +57,36 @@ def get_data(filters):
 				`viewStatement`.customer,
 				`viewStatement`.ncf,
 				`viewStatement`.remarks,
-				`viewStatement`.base_total,
+				`viewStatement`.base_net_total as net_total,
 				DATEDIFF(`viewStatement`.posting_date, CURDATE() ) as days,
-				`	`.discount_amount,
+				0 as discount_amount,
 				`viewStatement`.base_total_taxes_and_charges as taxes,
 				`viewStatement`.additional_discount_percentage,
 				`viewStatement`.base_grand_total as grand_total,
-				`viewStatement`.paid_amount,
-				`viewStatement`.outstanding_amount
+				MAX(`tabJournal Entry`.posting_date) as last_payment,
+				MAX(`tabJournal Entry`.name) as document,
+				`viewStatement`.base_outstanding_amount as outstanding_amount 
 			FROM
 				`viewStatement`
+			LEFT JOIN
+				`tabJournal Entry Account`
+			ON
+				`tabJournal Entry Account`.reference_type = `viewStatement`.doctype
+			AND
+				`tabJournal Entry Account`.reference_name = `viewStatement`.name
+			LEFT JOIN
+				`tabJournal Entry`
+			ON
+				`tabJournal Entry`.name = `tabJournal Entry Account`.parent
+			AND	
+				`tabJournal Entry`.docstatus = 1
 			WHERE
 				{conditions}
+			GROUP BY 
+				`viewStatement`.name
 			ORDER BY 
 				`viewStatement`.posting_date desc
-		""".format(conditions=get_conditions(filters)), as_dict=True, debug=False)
+		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
 	
 	elif filters.get("currency") == "Invoice Currency":
 		data = frappe.db.sql("""
@@ -79,24 +96,41 @@ def get_data(filters):
 				`viewStatement`.customer,
 				`viewStatement`.ncf,
 				`viewStatement`.remarks,
-				`viewStatement`.total as base_total,
+				`viewStatement`.net_total,
 				DATEDIFF(`viewStatement`.posting_date, CURDATE() ) as days,
 				`viewStatement`.discount_amount,
 				`viewStatement`.total_taxes_and_charges as taxes,
 				`viewStatement`.additional_discount_percentage,
 				`viewStatement`.grand_total,
-				`viewStatement`.grand_total - `viewStatement`.outstanding_amount as paid_amount,
+				MAX(`tabJournal Entry`.posting_date) as last_payment,
+				MAX(`tabJournal Entry`.name) as document,
 				`viewStatement`.outstanding_amount
 			FROM
 				`viewStatement`
+			LEFT JOIN
+				`tabJournal Entry Account`
+			ON
+				`tabJournal Entry Account`.reference_type = `viewStatement`.doctype
+			AND
+				`tabJournal Entry Account`.reference_name = `viewStatement`.name
+			LEFT JOIN
+				`tabJournal Entry`
+			ON
+				`tabJournal Entry`.name = `tabJournal Entry Account`.parent
+			AND	
+				`tabJournal Entry`.docstatus = 1
 			WHERE
 				{conditions}
+			GROUP BY 
+				`viewStatement`.name
 			ORDER BY 
-				`viewStatement`.posting_date
-		""".format(conditions=get_conditions(filters)), as_dict=True, debug=False)
+				`viewStatement`.posting_date desc
+		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
 
 	for row in data:
 			discount, rate = get_discount_rate(row)
+			itbis = (row.net_total - discount) * 0.18
+			gross_amount = row.grand_total if row.additional_discount_percentage else row.grand_total - discount
 			results.append(
 				(
 					row.name,
@@ -104,14 +138,16 @@ def get_data(filters):
 					row.customer,
 					row.ncf,
 					row.remarks,
-					row.base_total,
-					row.days,
-					"{}%".format(rate),
-					discount,
-					(row.base_total - discount) * 0.18,
-					row.grand_total if row.additional_discount_percentage else row.grand_total - discount,
-					row.paid_amount,
-					row.outstanding_amount if row.additional_discount_percentage else row.outstanding_amount - discount,
+					row.net_total,
+					# row.days,
+					# "{}%".format(rate),
+					# discount,
+					itbis,
+					gross_amount,
+					flt(gross_amount) - flt(row.outstanding_amount),
+					row.last_payment,
+					row.document,
+					row.outstanding_amount
 				)
 			)
 
@@ -120,7 +156,7 @@ def get_data(filters):
 def get_discount_rate(row): 
 	if row.additional_discount_percentage:
 		rate = row.additional_discount_percentage
-		return flt(row.base_total * rate / 100.0, 2), rate
+		return flt(row.net_total * rate / 100.0, 2), rate
 	rate = .00
 	if row.days > 29:
 		rate = 4.33
@@ -129,5 +165,5 @@ def get_discount_rate(row):
 	if row.days > 89:
 		rate = 13.00
 	# frappe.errprint("{} * {} / 100 = {}".format(row.base_total, rate, row.base_total * rate / 100.0))
-	return flt(row.base_total * rate / 100.0, 2) or flt(row.discount), rate
+	return flt(row.net_total * rate / 100.0, 2) or flt(row.discount), rate
 

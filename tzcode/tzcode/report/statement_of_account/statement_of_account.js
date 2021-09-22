@@ -31,7 +31,7 @@ frappe.query_reports["Statement of Account"] = {
 			"default": "Invoice Currency",
 		},
 		{
-			"label": __("Show Unpaid Only?"),
+			"label": __("Mostrar solo Pendientes?"),
 			"fieldname": "unpaid",
 			"fieldtype": "Check",
 			"default": "1",

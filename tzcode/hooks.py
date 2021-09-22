@@ -35,7 +35,9 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {
 	"Payroll Entry" : "public/js/payroll_entry.js",
-	"Purchase Invoice" : "public/js/purchase_invoice.js"
+	"Purchase Invoice" : "public/js/purchase_invoice.js",
+	"ToDo" : "public/js/todo.js",
+	"Issue" : "public/js/issue.js",
 }
 doctype_list_js = {
 	"Customer" : "public/js/customer_list.js",
@@ -51,6 +53,66 @@ website_context = {
     "favicon": 	"/assets/tzcode/images/favicon.png",
 	"splash_image": "/assets/tzcode/images/blue_logo.svg"
 }
+
+# Fixtures
+# ----------
+
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": {
+			"name": (
+				"in", (
+					"ToDo-resolution_details"
+				)
+			)
+		}
+	},
+	{
+		"doctype": "Property Setter",
+		"filters": {
+			"name": (
+				"in", (
+					"Issue-main-set_only_once",
+					"Issue-status-options",
+					"Issue-customer-in_standard_filter",
+					"Issue-status-read_only",
+					"ToDo-status-options",
+					"Supplier-main-search_fields",
+					"Sales Invoice-remarks-allow_on_submit",
+					"Sales Invoice-main-default_print_format",
+					"Sales Order-main-default_print_format",
+					"Sales Order Item-description-allow_on_submit",
+					"Salary Slip-main-default_print_format",
+					"Payroll Entry-department-default",
+					"Payroll Entry-bank_account-default",
+					"Payroll Entry-payment_account-default",
+					"Payroll Entry-payroll_frequency-default",
+				)
+			)
+		}
+	},
+	{
+		"doctype": "Purchase Invoice",
+		"filters": {
+			"name": (
+				"in", (
+					"Factura de Venta",
+					"Orden de Venta",
+					"Salary Slip",
+					"Quotation",
+					"Apertura de Cuenta Popular",
+					"Recibo de Ingreso JV",
+					"Carta de Retención",
+					"Proveedor de Servicios",
+					"Contrato de Trabajo",
+					"Orden de Venta Local",
+				)
+			)
+		}
+	},
+]
+
 # Home Pages
 # ----------
 
@@ -119,6 +181,7 @@ doc_events = {
 		"validate": "tzcode.hook.task.validate",
 	},
 	"Sales Invoice": {
+		"on_submit": "tzcode.hook.sales_invoice.on_submit",
 		"on_cancel": "tzcode.hook.sales_invoice.on_cancel",
 		"on_trash": "tzcode.hook.sales_invoice.on_trash",
 	},
@@ -132,6 +195,14 @@ doc_events = {
 	"Journal Entry": {
 		"on_cancel": "tzcode.hook.journal_entry.on_cancel",
 		"on_trash": "tzcode.hook.journal_entry.on_trash",
+	},
+	"Issue": {
+		"on_update": "tzcode.hook.issue.on_update",
+	},
+	"ToDo": {
+		"on_update": "tzcode.hook.todo.on_update",
+		"validate": "tzcode.hook.todo.validate",
+		"after_insert": "tzcode.hook.todo.after_insert",
 	}
 }
 

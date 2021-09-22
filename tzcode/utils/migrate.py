@@ -30,14 +30,18 @@ def create_views():
 	frappe.db.sql("""
 	create view `viewStatement` AS
 		SELECT 
+			'Sales Invoice' as doctype,
 			`tabSales Invoice`.name,
 			`tabSales Invoice`.docstatus,
 			`tabSales Invoice`.status,
+			`tabSales Invoice`.ncf,
+			`tabSales Invoice`.conversion_rate,
 			`tabSales Invoice`.posting_date,
 			`tabSales Invoice`.customer,
 			`tabSales Invoice`.remarks,
 			`tabSales Invoice`.total,
-			`tabSales Invoice`.base_total,
+			`tabSales Invoice`.base_net_total,
+			`tabSales Invoice`.net_total,
 			`tabSales Invoice`.total_taxes_and_charges,
 			`tabSales Invoice`.additional_discount_percentage,
 			`tabSales Invoice`.base_total_taxes_and_charges,
@@ -54,14 +58,18 @@ def create_views():
 		UNION
 
 		SELECT 
+			'Sales Order' as doctype,
 			`tabSales Order`.name,
 			`tabSales Order`.docstatus,
 			`tabSales Order`.status,
+			'-' as ncf,
+			`tabSales Order`.conversion_rate,
 			`tabSales Order`.delivery_date as posting_date,
 			`tabSales Order`.customer,
 			`tabSales Order`.remarks,
 			`tabSales Order`.total,
-			`tabSales Order`.base_total,
+			`tabSales Order`.base_net_total,
+			`tabSales Order`.net_total,
 			`tabSales Order`.total_taxes_and_charges,
 			`tabSales Order`.additional_discount_percentage,
 			`tabSales Order`.base_total_taxes_and_charges,
