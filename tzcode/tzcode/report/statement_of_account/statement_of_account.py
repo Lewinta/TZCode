@@ -12,21 +12,21 @@ def execute(filters=None):
 def get_columns():
 	"""return columns based on filters"""
 	columns = [
-		_("Invoice") 			+ ":Link/Sales Invoice:110",
+		_("Invoice") 			+ ":Link/Sales Invoice:160",
 		_("Date") 				+ ":Date:95",
-		_("Customer") 			+ ":Data:200",
+		_("Customer") 			+ ":Data:150",
 		_("NCF") 				+ ":Data:110",
-		_("Reference") 			+ ":Data:130",
+		_("Reference") 			+ ":Data:180",
 		_("Neto")		 		+ ":Currency/currency:100",
 		# _("Dias")	 			+ ":Data:60",
 		# _("%")	 				+ ":Data:60",
 		# _("Descuento")	 		+ ":Currency/currency:90",
-		_("ITBIS")	 			+ ":Currency/currency:90",
-		_("Bruto")	 	+ ":Currency/currency:100",
-		_("Pagado")	 	+ ":Currency/currency:100",
-		_("Ult. Pago")	 	+ ":Date:95",
-		_("Documento")	 	+ ":Link/Journal Entry:170",
-		_("Pendiente")	+ ":Currency/Currency:100",
+		_("Tax Amt.")	 			+ ":Currency/currency:90",
+		_("Gross Amt.")	 	+ ":Currency/currency:100",
+		_("Paid Amt.")	 	+ ":Currency/currency:100",
+		_("Pending Amt.")	+ ":Currency/Currency:100",
+		_("Last. Pymt")	 	+ ":Date:95",
+		_("Document")	 	+ ":Link/Journal Entry:160",
 	]
 	
 	return columns
@@ -63,6 +63,8 @@ def get_data(filters):
 				`viewStatement`.base_total_taxes_and_charges as taxes,
 				`viewStatement`.additional_discount_percentage,
 				`viewStatement`.base_grand_total as grand_total,
+				`viewStatement`.doctype,
+				`tabJournal Entry`.total_debit as paid_amount,
 				MAX(`tabJournal Entry`.posting_date) as last_payment,
 				MAX(`tabJournal Entry`.name) as document,
 				`viewStatement`.base_outstanding_amount as outstanding_amount 
@@ -102,6 +104,8 @@ def get_data(filters):
 				`viewStatement`.total_taxes_and_charges as taxes,
 				`viewStatement`.additional_discount_percentage,
 				`viewStatement`.grand_total,
+				`viewStatement`.doctype,
+				`tabJournal Entry`.total_debit as paid_amount,
 				MAX(`tabJournal Entry`.posting_date) as last_payment,
 				MAX(`tabJournal Entry`.name) as document,
 				`viewStatement`.outstanding_amount
@@ -144,10 +148,11 @@ def get_data(filters):
 					# discount,
 					itbis,
 					gross_amount,
-					flt(gross_amount) - flt(row.outstanding_amount),
+					# row.paid_amount,
+					gross_amount - row.outstanding_amount,
+					row.outstanding_amount if row.doctype == "Sales Invoice" else flt(row.outstanding_amount) - flt(row.paid_amount),
 					row.last_payment,
 					row.document,
-					row.outstanding_amount
 				)
 			)
 

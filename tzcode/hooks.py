@@ -37,6 +37,7 @@ doctype_js = {
 	"Payroll Entry" : "public/js/payroll_entry.js",
 	"Purchase Invoice" : "public/js/purchase_invoice.js",
 	"ToDo" : "public/js/todo.js",
+	"Contact" : "public/js/contact.js",
 	"Issue" : "public/js/issue.js",
 }
 doctype_list_js = {
@@ -64,6 +65,8 @@ fixtures = [
 			"name": (
 				"in", (
 					"ToDo-resolution_details"
+					"Customer-monthly_bill",
+					"Customer-base_monthly_bill",
 				)
 			)
 		}
@@ -198,6 +201,12 @@ doc_events = {
 	},
 	"Issue": {
 		"on_update": "tzcode.hook.issue.on_update",
+	},
+	"Customer": {
+		"on_update": "tzcode.hook.customer.on_update",
+	},
+	"Auto Repeat": {
+		"validate": "tzcode.hook.auto_repeat.validate",
 	},
 	"ToDo": {
 		"on_update": "tzcode.hook.todo.on_update",

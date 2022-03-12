@@ -1,0 +1,191 @@
+{
+ "actions": [],
+ "autoname": "field:label",
+ "creation": "2022-03-12 01:13:48.608046",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "main_cb",
+  "provider",
+  "vps_details_sb",
+  "ip",
+  "cores",
+  "vps_details_cb",
+  "memory",
+  "disk",
+  "totals_sb",
+  "total_customers",
+  "monthly_bill",
+  "totals_cb",
+  "total_income",
+  "profit",
+  "customers_sb",
+  "customers"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "no_copy": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "main_cb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "options": "Supplier"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:false",
+   "fieldname": "vps_details_sb",
+   "fieldtype": "Section Break",
+   "label": "VPS Details"
+  },
+  {
+   "fieldname": "ip",
+   "fieldtype": "Data",
+   "label": "IP",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cores",
+   "fieldtype": "Int",
+   "label": "Cores"
+  },
+  {
+   "fieldname": "vps_details_cb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "memory",
+   "fieldtype": "Int",
+   "label": "Memory"
+  },
+  {
+   "fieldname": "disk",
+   "fieldtype": "Int",
+   "label": "Disk"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:true",
+   "fieldname": "totals_sb",
+   "fieldtype": "Section Break",
+   "label": "Totals",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "total_customers",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Customers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "monthly_bill",
+   "fieldtype": "Currency",
+   "label": "Monthly Bill"
+  },
+  {
+   "fieldname": "totals_cb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "total_income",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Income",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Profit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customers_sb",
+   "fieldtype": "Section Break",
+   "label": "Customers"
+  },
+  {
+   "fieldname": "customers",
+   "fieldtype": "Table",
+   "label": "Customers",
+   "options": "Cloud Server Host"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-03-12 02:52:37.493666",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Cloud Server",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Auditor",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
