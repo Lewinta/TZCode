@@ -1,0 +1,31 @@
+{
+ "attach_print": 0,
+ "channel": "WhatsApp",
+ "creation": "2022-05-02 08:07:03.197920",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Sales Invoice",
+ "enabled": 1,
+ "event": "Method",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Thank you for making business with us here is your monthly Bill",
+ "method": "send_whatsapp_notification",
+ "modified": "2022-05-02 08:28:58.976472",
+ "modified_by": "lewinvillar@tzcode.tech",
+ "module": "TZCode",
+ "name": "Nueva Factura Generada",
+ "owner": "lewinvillar@tzcode.tech",
+ "print_format": "Factura de Venta",
+ "recipients": [
+  {
+   "condition": "1=1",
+   "receiver_by_document_field": "owner"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "twilio_number": "+14155238886",
+ "value_changed": "remarks"
+}

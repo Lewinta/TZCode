@@ -184,6 +184,7 @@ doc_events = {
 		"validate": "tzcode.hook.task.validate",
 	},
 	"Sales Invoice": {
+		"before_insert": "tzcode.hook.sales_invoice.before_insert",
 		"on_submit": "tzcode.hook.sales_invoice.on_submit",
 		"on_cancel": "tzcode.hook.sales_invoice.on_cancel",
 		"on_trash": "tzcode.hook.sales_invoice.on_trash",
@@ -244,9 +245,9 @@ doc_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "tzcode.event.get_events"
-# }
+override_whitelisted_methods = {
+	"validate_token": "tzcode.client.validate_token"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -284,4 +285,3 @@ user_data_fields = [
 		"doctype": "{doctype_4}"
 	}
 ]
-

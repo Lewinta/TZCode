@@ -70,6 +70,10 @@ def get_data(filters):
 				`viewStatement`.base_outstanding_amount as outstanding_amount 
 			FROM
 				`viewStatement`
+			JOIN
+				`tabSales Invoice`
+			ON
+				`viewStatement`.name = `tabSales Invoice`.name
 			LEFT JOIN
 				`tabJournal Entry Account`
 			ON
@@ -87,7 +91,7 @@ def get_data(filters):
 			GROUP BY 
 				`viewStatement`.name
 			ORDER BY 
-				`viewStatement`.posting_date desc
+				`tabSales Invoice`.custom_idx desc
 		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
 	
 	elif filters.get("currency") == "Invoice Currency":
@@ -111,6 +115,10 @@ def get_data(filters):
 				`viewStatement`.outstanding_amount
 			FROM
 				`viewStatement`
+			JOIN
+				`tabSales Invoice`
+			ON
+				`viewStatement`.name = `tabSales Invoice`.name
 			LEFT JOIN
 				`tabJournal Entry Account`
 			ON
@@ -128,7 +136,7 @@ def get_data(filters):
 			GROUP BY 
 				`viewStatement`.name
 			ORDER BY 
-				`viewStatement`.posting_date desc
+				`tabSales Invoice`.custom_idx desc
 		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
 
 	for row in data:
