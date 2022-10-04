@@ -39,11 +39,13 @@ doctype_js = {
 	"ToDo" : "public/js/todo.js",
 	"Contact" : "public/js/contact.js",
 	"Issue" : "public/js/issue.js",
+	"User" : "public/js/user.js",
+	"Task" : "public/js/task.js",
 }
 doctype_list_js = {
 	"Customer" : "public/js/customer_list.js",
-	"User" : "public/js/user.js",
-	"Task" : "public/js/task.js",
+	"Issue" : "public/js/issue_list.js",
+	"Payroll Entry" : "public/js/payroll_entry.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -64,6 +66,7 @@ fixtures = [
 		"filters": {
 			"name": (
 				"in", (
+					"Sales Invoice-tipo_de_factura"
 					"ToDo-resolution_details"
 					"Customer-monthly_bill",
 					"Customer-base_monthly_bill",
@@ -83,6 +86,8 @@ fixtures = [
 					"ToDo-status-options",
 					"Supplier-main-search_fields",
 					"Sales Invoice-remarks-allow_on_submit",
+					"Sales Invoice-naming_series-options",
+					"Sales Invoice Item-price_list_rate-read_only",
 					"Sales Invoice-main-default_print_format",
 					"Sales Order-main-default_print_format",
 					"Sales Order Item-description-allow_on_submit",
@@ -285,3 +290,12 @@ user_data_fields = [
 		"doctype": "{doctype_4}"
 	}
 ]
+
+default_mail_footer = """
+	<span>
+		Sent via
+		<a class="text-muted" href="https://tzcode.tech" target="_blank">
+			TZCode
+		</a>
+	</span>
+"""

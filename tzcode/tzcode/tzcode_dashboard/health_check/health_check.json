@@ -1,0 +1,20 @@
+{
+ "cards": [],
+ "charts": [
+  {
+   "width": "Half"
+  }
+ ],
+ "creation": "2022-09-07 12:44:55.618656",
+ "dashboard_name": "Health Check",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2022-09-07 12:44:55.618656",
+ "modified_by": "lewinvillar@tzcode.tech",
+ "module": "TZCode",
+ "name": "Health Check",
+ "owner": "lewinvillar@tzcode.tech"
+}

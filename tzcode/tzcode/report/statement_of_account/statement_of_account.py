@@ -12,7 +12,7 @@ def execute(filters=None):
 def get_columns():
 	"""return columns based on filters"""
 	columns = [
-		_("Invoice") 			+ ":Link/Sales Invoice:160",
+		_("Invoice") 			+ ":Link/Sales Invoice:180",
 		_("Date") 				+ ":Date:95",
 		_("Customer") 			+ ":Data:150",
 		_("NCF") 				+ ":Data:110",
@@ -24,9 +24,9 @@ def get_columns():
 		_("Tax Amt.")	 			+ ":Currency/currency:90",
 		_("Gross Amt.")	 	+ ":Currency/currency:100",
 		_("Paid Amt.")	 	+ ":Currency/currency:100",
-		_("Pending Amt.")	+ ":Currency/Currency:100",
+		_("Pending Amt.")	+ ":Currency/Currency:120",
 		_("Last. Pymt")	 	+ ":Date:95",
-		_("Document")	 	+ ":Link/Journal Entry:160",
+		_("Document")	 	+ ":Link/Journal Entry:180",
 	]
 	
 	return columns
@@ -64,9 +64,10 @@ def get_data(filters):
 				`viewStatement`.additional_discount_percentage,
 				`viewStatement`.base_grand_total as grand_total,
 				`viewStatement`.doctype,
-				`tabJournal Entry`.total_debit as paid_amount,
-				MAX(`tabJournal Entry`.posting_date) as last_payment,
-				MAX(`tabJournal Entry`.name) as document,
+				`viewReceipts`.document,
+				`viewReceipts`.paid_amount,
+				MAX(`viewReceipts`.posting_date) as last_payment,
+				MAX(`viewReceipts`.reference_name) as reference_name,
 				`viewStatement`.base_outstanding_amount as outstanding_amount 
 			FROM
 				`viewStatement`
@@ -75,23 +76,17 @@ def get_data(filters):
 			ON
 				`viewStatement`.name = `tabSales Invoice`.name
 			LEFT JOIN
-				`tabJournal Entry Account`
+				`viewReceipts`
 			ON
-				`tabJournal Entry Account`.reference_type = `viewStatement`.doctype
-			AND
-				`tabJournal Entry Account`.reference_name = `viewStatement`.name
-			LEFT JOIN
-				`tabJournal Entry`
-			ON
-				`tabJournal Entry`.name = `tabJournal Entry Account`.parent
+				`viewStatement`.doctype = `viewReceipts`.reference_doctype
 			AND	
-				`tabJournal Entry`.docstatus = 1
+				`viewStatement`.name = `viewReceipts`.reference_name
 			WHERE
 				{conditions}
 			GROUP BY 
 				`viewStatement`.name
 			ORDER BY 
-				`tabSales Invoice`.custom_idx desc
+				`viewStatement`.posting_date desc
 		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
 	
 	elif filters.get("currency") == "Invoice Currency":
@@ -137,7 +132,7 @@ def get_data(filters):
 				`viewStatement`.name
 			ORDER BY 
 				`tabSales Invoice`.custom_idx desc
-		""".format(conditions=get_conditions(filters)), as_dict=True, debug=True)
+		""".format(conditions=get_conditions(filters)), as_dict=True, debug=False)
 
 	for row in data:
 			discount, rate = get_discount_rate(row)
@@ -157,8 +152,9 @@ def get_data(filters):
 					itbis,
 					gross_amount,
 					# row.paid_amount,
-					gross_amount - row.outstanding_amount,
-					row.outstanding_amount if row.doctype == "Sales Invoice" else flt(row.outstanding_amount) - flt(row.paid_amount),
+					# gross_amount - row.outstanding_amount,
+					row.paid_amount,
+					row.outstanding_amount ,
 					row.last_payment,
 					row.document,
 				)

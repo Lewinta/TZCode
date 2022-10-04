@@ -1,11 +1,12 @@
 import frappe
 from personal.hook.accounts_controller import cancel_gl_entries, delete_gl_entries
 from frappe.utils import add_months
+
 def before_insert(doc, method):
-	if not doc.auto_repeat:
+	if doc.tipo_de_factura != 'Iguala':
 		return
-	year, month, day = add_months(doc.posting_date, -1).split("-")
-	doc.remarks = f"Mes de {get_month_name(month)} {year}"
+	year, month, day = str(add_months(doc.posting_date, -1)).split("-")
+	doc.remarks = f"{get_month_name(month)} {year}"
 	
 
 def on_submit(doc, method):
