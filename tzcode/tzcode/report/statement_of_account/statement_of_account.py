@@ -153,7 +153,7 @@ def get_data(filters):
 					gross_amount,
 					# row.paid_amount,
 					# gross_amount - row.outstanding_amount,
-					row.paid_amount,
+					row.paid_amount if flt(row.paid_amount) <= flt(row.outstanding_amount) else gross_amount,
 					row.outstanding_amount ,
 					row.last_payment,
 					row.document,

@@ -4,6 +4,6 @@ frappe.ui.form.on("Payroll Entry", {
             return
         if (frm.doc.employee)
             return
-        frm.events.get_employee_details(frm);
+        // frm.events.get_employee_details(frm);
     }
 })

@@ -1,0 +1,23 @@
+{
+ "creation": "2022-10-20 03:22:50.192161",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "dynamic_filters_json": "{\"from_date\":\"frappe.datetime.month_start()\",\"to_date\":\"frappe.datetime.month_end()\"}",
+ "filters_json": "{\"from_date\":\"2022-10-01\",\"to_date\":\"2022-10-31\"}",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Tax Difference",
+ "modified": "2022-10-20 03:22:50.192161",
+ "modified_by": "lewinvillar@tzcode.tech",
+ "module": "TZCode",
+ "name": "Tax Difference",
+ "owner": "lewinvillar@tzcode.tech",
+ "report_field": "difference",
+ "report_function": "Sum",
+ "report_name": "Tax Evaluation",
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "type": "Report"
+}

@@ -1,5 +1,28 @@
 frappe.ui.form.on("Issue", {
-    refresh(frm){
-        frm.remove_custom_button("Close")
-    }
+    setup(frm) {
+        const style = document.createElement("style")
+        style.innerHTML = `
+            #page-Issue div[data-label=Create],
+            #page-Issue button[data-label=Close],
+            #page-Issue button[data-label=Reopen]
+            { display: none; }
+        `
+        document.head.appendChild(style)
+    },
+    refresh(frm) {
+        frm.trigger("render_go_to_client_system_btn");
+    },
+    render_go_to_client_system_btn(frm) {
+        const { doc, fields_dict } = frm;
+
+        if (doc.remote_reference) {
+            const { wrapper } = fields_dict.remote_reference;
+            jQuery(wrapper).find("button.btn-default").remove();
+            jQuery("<button class='btn btn-default btn-xs'>Go to Client System</button>")
+                .click(() => {
+                    window.open(`${doc.remote_reference}/login`, "_blank");
+                })
+                .appendTo(wrapper);
+        }
+    },
 })

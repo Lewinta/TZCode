@@ -1,11 +1,69 @@
 import frappe
 import requests
 import json
+
+from frappe import db
 from frappe import enqueue
+
+from frappe.utils import cstr
 
 
 @frappe.whitelist()
 def create_issue(subject, status, customer, raised_by, remote_reference, priority=None, description="No Description"):
+    doctype = "Bulk Issue"
+    filters = {
+        "remote_reference": remote_reference,
+        "customer": customer,
+    }
+
+    if db.exists(doctype, filters):
+        update_bulk_issue(subject, status, customer, raised_by,
+                          remote_reference, priority, description)
+
+    else:
+        create_bulk_issue(subject, status, customer, raised_by,
+                          remote_reference, priority, description)
+
+
+def create_bulk_issue(subject, status, customer, raised_by, remote_reference, priority=None, description="No Description"):
+    doctype = "Bulk Issue"
+    doc = frappe.new_doc(doctype)
+    doc.update({
+        "subject": subject,
+        "status": status,
+        "customer": customer,
+        "raised_by": raised_by,
+        "remote_reference": remote_reference,
+        "priority": priority,
+        "description": description,
+    })
+
+    doc.save(ignore_permissions=True)
+    return doc.as_dict()
+
+
+def update_bulk_issue(subject, status, customer, raised_by, remote_reference, priority=None, description="No Description"):
+    doctype = "Bulk Issue"
+
+    doc = frappe.get_doc(doctype, {
+        "remote_reference": remote_reference,
+    })
+
+    doc.update({
+        "subject": subject,
+        "status": status,
+        "customer": customer,
+        "raised_by": raised_by,
+        "remote_reference": remote_reference,
+        "priority": priority,
+        "description": description,
+    })
+
+    doc.save(ignore_permissions=True)
+    return doc.as_dict()
+
+
+def _create_issue():
     if not priority:
         priority = "Medio"
 
@@ -49,7 +107,7 @@ def close_issue(doc):
     data = json.dumps({
         "status": doc.status,
         "resolution_details": doc.resolution_details,
-        "due_date": doc.due_date,
+        "due_date": cstr(doc.due_date),
         "assigned_to": doc.assigned_to,
     })
     endpoint = "{}{}".format(customer.host_url, remote_method)
@@ -64,6 +122,6 @@ def close_issue(doc):
 
 def set_closed_by(doc):
     if doc.workflow_state == "Closed" \
-        and not doc.closed_by:
+            and not doc.closed_by:
         doc.closed_by = frappe.session.user
         doc.db_update()

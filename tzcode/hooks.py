@@ -34,18 +34,18 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
-	"Payroll Entry" : "public/js/payroll_entry.js",
-	"Purchase Invoice" : "public/js/purchase_invoice.js",
-	"ToDo" : "public/js/todo.js",
-	"Contact" : "public/js/contact.js",
-	"Issue" : "public/js/issue.js",
-	"User" : "public/js/user.js",
-	"Task" : "public/js/task.js",
+    "Payroll Entry": "public/js/payroll_entry.js",
+    "Purchase Invoice": "public/js/purchase_invoice.js",
+    "ToDo": "public/js/todo.js",
+    "Contact": "public/js/contact.js",
+    "Issue": "public/js/issue.js",
+    "User": "public/js/user.js",
+    "Task": "public/js/task.js",
 }
 doctype_list_js = {
-	"Customer" : "public/js/customer_list.js",
-	"Issue" : "public/js/issue_list.js",
-	"Payroll Entry" : "public/js/payroll_entry.js",
+    "Customer": "public/js/customer_list.js",
+    "Issue": "public/js/issue_list.js",
+    "Payroll Entry": "public/js/payroll_entry.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -54,71 +54,71 @@ app_logo_url = "/assets/tzcode/images/blue_logo.svg"
 
 website_context = {
     "favicon": 	"/assets/tzcode/images/favicon.png",
-	"splash_image": "/assets/tzcode/images/blue_logo.svg"
+    "splash_image": "/assets/tzcode/images/blue_logo.svg"
 }
 
 # Fixtures
 # ----------
 
 fixtures = [
-	{
-		"doctype": "Custom Field",
-		"filters": {
-			"name": (
-				"in", (
-					"Sales Invoice-tipo_de_factura"
-					"ToDo-resolution_details"
-					"Customer-monthly_bill",
-					"Customer-base_monthly_bill",
-				)
-			)
-		}
-	},
-	{
-		"doctype": "Property Setter",
-		"filters": {
-			"name": (
-				"in", (
-					"Issue-main-set_only_once",
-					"Issue-status-options",
-					"Issue-customer-in_standard_filter",
-					"Issue-status-read_only",
-					"ToDo-status-options",
-					"Supplier-main-search_fields",
-					"Sales Invoice-remarks-allow_on_submit",
-					"Sales Invoice-naming_series-options",
-					"Sales Invoice Item-price_list_rate-read_only",
-					"Sales Invoice-main-default_print_format",
-					"Sales Order-main-default_print_format",
-					"Sales Order Item-description-allow_on_submit",
-					"Salary Slip-main-default_print_format",
-					"Payroll Entry-department-default",
-					"Payroll Entry-bank_account-default",
-					"Payroll Entry-payment_account-default",
-					"Payroll Entry-payroll_frequency-default",
-				)
-			)
-		}
-	},
-	{
-		"doctype": "Print Format",
-		"filters": {
-			"name": (
-				"in", (
-					"Factura de Venta",
-					"Orden de Venta",
-					"Salary Slip",
-					"Quotation",
-					"Apertura de Cuenta Popular",
-					"Recibo de Ingreso JV",
-					"Carta de Retención",
-					"Proveedor de Servicios",
-					"Contrato de Trabajo",
-					"Orden de Venta Local",
-				)
-			)
-		}
-	},
+    {
+        "doctype": "Custom Field",
+        "filters": {
+            "name": (
+                "in", (
+                    "Sales Invoice-tipo_de_factura"
+                    "ToDo-resolution_details"
+                    "Customer-monthly_bill",
+                    "Customer-base_monthly_bill",
+                )
+            )
+        }
+    },
+    {
+        "doctype": "Property Setter",
+        "filters": {
+            "name": (
+                "in", (
+                    "Issue-main-set_only_once",
+                    "Issue-status-options",
+                    "Issue-customer-in_standard_filter",
+                    "Issue-status-read_only",
+                    "ToDo-status-options",
+                    "Supplier-main-search_fields",
+                    "Sales Invoice-remarks-allow_on_submit",
+                    "Sales Invoice-naming_series-options",
+                    "Sales Invoice Item-price_list_rate-read_only",
+                    "Sales Invoice-main-default_print_format",
+                    "Sales Order-main-default_print_format",
+                    "Sales Order Item-description-allow_on_submit",
+                    "Salary Slip-main-default_print_format",
+                    "Payroll Entry-department-default",
+                    "Payroll Entry-bank_account-default",
+                    "Payroll Entry-payment_account-default",
+                    "Payroll Entry-payroll_frequency-default",
+                )
+            )
+        }
+    },
+    {
+        "doctype": "Print Format",
+        "filters": {
+            "name": (
+                "in", (
+                    "Factura de Venta",
+                    "Orden de Venta",
+                    "Salary Slip",
+                    "Quotation",
+                    "Apertura de Cuenta Popular",
+                    "Recibo de Ingreso JV",
+                    "Carta de Retención",
+                    "Proveedor de Servicios",
+                    "Contrato de Trabajo",
+                    "Orden de Venta Local",
+                )
+            )
+        }
+    },
 ]
 
 # Home Pages
@@ -166,59 +166,59 @@ fixtures = [
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+    "Issue": "tzcode.controllers.overrides.issue.Issue"
+}
 
 
 # Jinja
 # ---------------
 
 jenv = {
-	"methods": ["get_employee_salary:tzcode.jinja.methods.get_employee_salary"]
+    "methods": ["get_employee_salary:tzcode.jinja.methods.get_employee_salary"]
 }
 # Document Events
 # ---------------
 # Hook on document methods and events
 
 doc_events = {
-	"User": {
-		"validate": "tzcode.hook.user.validate",
-	},
-	"Task": {
-		"validate": "tzcode.hook.task.validate",
-	},
-	"Sales Invoice": {
-		"before_insert": "tzcode.hook.sales_invoice.before_insert",
-		"on_submit": "tzcode.hook.sales_invoice.on_submit",
-		"on_cancel": "tzcode.hook.sales_invoice.on_cancel",
-		"on_trash": "tzcode.hook.sales_invoice.on_trash",
-	},
-	"Sales Order": {
-		"validate": "tzcode.hook.sales_order.validate",
-	},
-	"Purchase Invoice": {
-		"on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
-		"on_trash": "tzcode.hook.purchase_invoice.on_trash",
-	},
-	"Journal Entry": {
-		"on_cancel": "tzcode.hook.journal_entry.on_cancel",
-		"on_trash": "tzcode.hook.journal_entry.on_trash",
-	},
-	"Issue": {
-		"on_update": "tzcode.hook.issue.on_update",
-	},
-	"Customer": {
-		"on_update": "tzcode.hook.customer.on_update",
-	},
-	"Auto Repeat": {
-		"validate": "tzcode.hook.auto_repeat.validate",
-	},
-	"ToDo": {
-		"on_update": "tzcode.hook.todo.on_update",
-		"validate": "tzcode.hook.todo.validate",
-		"after_insert": "tzcode.hook.todo.after_insert",
-	}
+    "User": {
+        "validate": "tzcode.hook.user.validate",
+    },
+    "Task": {
+        "validate": "tzcode.hook.task.validate",
+    },
+    "Sales Invoice": {
+        "before_insert": "tzcode.hook.sales_invoice.before_insert",
+        "on_submit": "tzcode.hook.sales_invoice.on_submit",
+        "on_cancel": "tzcode.hook.sales_invoice.on_cancel",
+        "on_trash": "tzcode.hook.sales_invoice.on_trash",
+    },
+    "Sales Order": {
+        "validate": "tzcode.hook.sales_order.validate",
+    },
+    "Purchase Invoice": {
+        "on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
+        "on_trash": "tzcode.hook.purchase_invoice.on_trash",
+    },
+    "Journal Entry": {
+        "on_cancel": "tzcode.hook.journal_entry.on_cancel",
+        "on_trash": "tzcode.hook.journal_entry.on_trash",
+    },
+    "Issue": {
+        "on_update": "tzcode.hook.issue.on_update",
+    },
+    "Customer": {
+        "on_update": "tzcode.hook.customer.on_update",
+    },
+    "Auto Repeat": {
+        "validate": "tzcode.hook.auto_repeat.validate",
+    },
+    "ToDo": {
+        "on_update": "tzcode.hook.todo.on_update",
+        "validate": "tzcode.hook.todo.validate",
+        "after_insert": "tzcode.hook.todo.after_insert",
+    }
 }
 
 # Scheduled Tasks
@@ -251,7 +251,7 @@ doc_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
-	"validate_token": "tzcode.client.validate_token"
+    "validate_token": "tzcode.client.validate_token"
 }
 #
 # each overriding function accepts a `data` argument;
@@ -271,24 +271,24 @@ after_migrate = "tzcode.utils.migrate.after_migrate"
 # --------------------
 
 user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
+    {
+        "doctype": "{doctype_1}",
+        "filter_by": "{filter_by}",
+        "redact_fields": ["{field_1}", "{field_2}"],
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_2}",
+        "filter_by": "{filter_by}",
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_3}",
+        "strict": False,
+    },
+    {
+        "doctype": "{doctype_4}"
+    }
 ]
 
 default_mail_footer = """
