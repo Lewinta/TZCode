@@ -2,9 +2,9 @@ frappe.ui.form.on("Issue", {
     setup(frm) {
         const style = document.createElement("style")
         style.innerHTML = `
-            #page-Issue div[data-label=Create],
-            #page-Issue button[data-label=Close],
-            #page-Issue button[data-label=Reopen]
+            #page-Issue div[data-label=${__("Create")}],
+            #page-Issue button[data-label=${__("Close")}],
+            #page-Issue button[data-label=${__("Reopen")}]
             { display: none; }
         `
         document.head.appendChild(style)

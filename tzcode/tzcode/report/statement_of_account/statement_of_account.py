@@ -26,7 +26,7 @@ def get_columns():
 		_("Paid Amt.")	 	+ ":Currency/currency:100",
 		_("Pending Amt.")	+ ":Currency/Currency:120",
 		_("Last. Pymt")	 	+ ":Date:95",
-		_("Document")	 	+ ":Link/Journal Entry:180",
+		_("Document")	 	+ ":Link/Payment Entry:180",
 	]
 	
 	return columns

@@ -1,0 +1,152 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-12-18 17:21:39.027165",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "paid_amount",
+  "currency",
+  "exchange_rate",
+  "column_break_4",
+  "base_paid_amount",
+  "upwork_rate",
+  "section_break_7",
+  "upwork_fee",
+  "withdrawal_fee",
+  "bank_fee",
+  "column_break_11",
+  "base_upwork_fee",
+  "base_withdrawal_fee",
+  "base_bank_fee",
+  "section_break_15",
+  "received_amount",
+  "column_break_17",
+  "base_received_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Paid Amount",
+   "reqd": 1
+  },
+  {
+   "default": "USD",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.currency != \"DOP\"",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Currency",
+   "label": "Exchange Rate"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "base_paid_amount",
+   "fieldtype": "Currency",
+   "label": "Base Paid Amount",
+   "read_only": 1
+  },
+  {
+   "default": "3.4",
+   "fieldname": "upwork_rate",
+   "fieldtype": "Percent",
+   "label": "Upwork Rate"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "upwork_fee",
+   "fieldtype": "Currency",
+   "label": "Upwork Fee"
+  },
+  {
+   "default": "30",
+   "fieldname": "withdrawal_fee",
+   "fieldtype": "Currency",
+   "label": "Withdrawal Fee"
+  },
+  {
+   "default": "7",
+   "fieldname": "bank_fee",
+   "fieldtype": "Currency",
+   "label": "Bank Fee"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "base_upwork_fee",
+   "fieldtype": "Currency",
+   "label": "Base Upwork Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_withdrawal_fee",
+   "fieldtype": "Currency",
+   "label": "Base Withdrawal Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_bank_fee",
+   "fieldtype": "Currency",
+   "label": "Base Bank Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "received_amount",
+   "fieldtype": "Currency",
+   "label": "Received Amount"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "base_received_amount",
+   "fieldtype": "Currency",
+   "label": "Base Received Amount",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-12-18 17:56:35.048224",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Upwork Payment Breakdown",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

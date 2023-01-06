@@ -6,6 +6,7 @@ def validate(doc, method):
         "Sales Invoice": "customer_name",
         "Purchase Order": "supplier_name",
         "Purchase Invoice": "supplier_name",
+        "ToDo": "description",
     }
 
     doc.custom_title = frappe.get_value(

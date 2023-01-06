@@ -6,3 +6,4 @@ def on_cancel(doc, method):
 
 def on_trash(doc, method):
     delete_gl_entries(doc)
+

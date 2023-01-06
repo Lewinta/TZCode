@@ -41,6 +41,7 @@ doctype_js = {
     "Issue": "public/js/issue.js",
     "User": "public/js/user.js",
     "Task": "public/js/task.js",
+    "Supplier": "public/js/supplier.js",
 }
 doctype_list_js = {
     "Customer": "public/js/customer_list.js",
@@ -87,6 +88,7 @@ fixtures = [
                     "Supplier-main-search_fields",
                     "Sales Invoice-remarks-allow_on_submit",
                     "Sales Invoice-naming_series-options",
+                    "Sales Invoice-naming_series-default",
                     "Sales Invoice Item-price_list_rate-read_only",
                     "Sales Invoice-main-default_print_format",
                     "Sales Order-main-default_print_format",
@@ -96,6 +98,9 @@ fixtures = [
                     "Payroll Entry-bank_account-default",
                     "Payroll Entry-payment_account-default",
                     "Payroll Entry-payroll_frequency-default",
+                    "Purchase Invoice-naming_series-default",
+                    "Purchase Invoice-naming_series-options",
+                    "Purchase Invoice-disable_rounded_total-default",
                 )
             )
         }
