@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "autoname": "TZ-PROC-.#####",
+ "creation": "2023-02-14 10:28:45.808952",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "procedure_title",
+  "version",
+  "context",
+  "section_break_4",
+  "tz_procedure_step"
+ ],
+ "fields": [
+  {
+   "fieldname": "procedure_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Procedure Title",
+   "reqd": 1
+  },
+  {
+   "default": "0.0.1",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Version",
+   "reqd": 1
+  },
+  {
+   "fieldname": "context",
+   "fieldtype": "Text Editor",
+   "in_list_view": 1,
+   "label": "Context",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "tz_procedure_step",
+   "fieldtype": "Table",
+   "label": "Tz Procedure Step",
+   "options": "Tz Procedure Step",
+   "reqd": 1
+  }
+ ],
+ "links": [],
+ "modified": "2023-02-14 10:33:04.906996",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Tz Procedure",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Support Team",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "procedure_title"
+}

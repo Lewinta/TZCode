@@ -18,5 +18,10 @@ frappe.ui.form.on("Purchase Invoice", {
                 "query": "tzcode.queries.get_suppliers"
             }
         })
+    },
+    cost_center(frm){
+        $.map(frm.doc.items + frm.doc.items, item => {
+            item.cost_center = frm.doc.cost_center;
+        })
     }
 })

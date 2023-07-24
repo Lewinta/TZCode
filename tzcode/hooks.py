@@ -41,6 +41,7 @@ doctype_js = {
     "Issue": "public/js/issue.js",
     "User": "public/js/user.js",
     "Task": "public/js/task.js",
+    "Appraisal": "public/js/appraisal.js",
     "Supplier": "public/js/supplier.js",
 }
 doctype_list_js = {
@@ -203,6 +204,7 @@ doc_events = {
         "validate": "tzcode.hook.sales_order.validate",
     },
     "Purchase Invoice": {
+        "validate": "tzcode.hook.purchase_invoice.validate",
         "on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
         "on_trash": "tzcode.hook.purchase_invoice.on_trash",
     },
@@ -256,7 +258,16 @@ doc_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
-    "validate_token": "tzcode.client.validate_token"
+    "validate_token": "tzcode.client.validate_token",
+    "store_data": "tzcode.webhooks.store_data",
+    "issues.json": "tzcode.webhooks.query_issues"
+}
+
+# Overriding Doctype Classes
+# ------------------------------
+#
+override_doctype_class = {
+    "Appraisal": "tzcode.controllers.overrides.appraisal.Appraisal",
 }
 #
 # each overriding function accepts a `data` argument;
