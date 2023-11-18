@@ -1,23 +1,28 @@
 import frappe
 from personal.hook.accounts_controller import cancel_gl_entries, delete_gl_entries
+
 from frappe.utils import add_months
 
 def before_insert(doc, method):
 	if doc.tipo_de_factura != 'Iguala':
 		return
+
 	year, month, day = str(add_months(doc.posting_date, -1)).split("-")
 	doc.remarks = f"{get_month_name(month)} {year}"
-	
+
+	# update exchange rate
+	if not doc.dont_override_conversion_rate:
+		doc.conversion_rate = get_latest_exchange_rate(from_currency=doc.currency)
 
 def on_submit(doc, method):
-    autoclose_so()
+	autoclose_so()
 
 def on_cancel(doc, method):
-    reopen_so()
-    cancel_gl_entries(doc)
+	reopen_so()
+	cancel_gl_entries(doc)
 
 def on_trash(doc, method):
-    delete_gl_entries(doc)
+	delete_gl_entries(doc)
 
 def autoclose_so():
 	filters = {
@@ -67,3 +72,28 @@ def get_month_name(month):
 		11: "Noviembre", 12: "Diciembre",
 	}
 	return month_name[int(month)]
+
+
+def get_latest_exchange_rate(from_currency="USD", to_currency="DOP"):
+	"""
+	Get the latest exchange rate for the given currencies.
+
+	:param from_currency: The currency to convert from. Default is USD.
+	:param to_currency: The currency to convert to. Default is DOP.
+	:return: The latest exchange rate as a float.
+	"""
+	doctype = "Currency Exchange"
+
+	if from_currency == to_currency:
+		return 1
+
+	filters = {
+		"from_currency": from_currency,
+		"to_currency": to_currency,
+		"for_selling": 1,
+	}
+
+	field = ["exchange_rate"]
+	order_by = "date Desc"
+
+	return frappe.get_value(doctype, filters, field, order_by=order_by)
