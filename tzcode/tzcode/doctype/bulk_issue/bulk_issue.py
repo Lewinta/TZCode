@@ -7,6 +7,10 @@ from frappe.model.document import Document
 from frappe.realtime import publish_realtime
 from frappe.utils.background_jobs import enqueue_doc
 
+from tzcode.controllers.overrides.issue.discord import (
+    trigger_discord_notifications,
+)
+
 
 class BulkIssue(Document):
     def after_insert(self):
@@ -50,7 +54,7 @@ class BulkIssue(Document):
 
         frappe.msgprint("Bulk Issue updated")
 
-    def create_issue(self):
+    def create_issue(self, auto_commit=True):
         doctype = "Issue"
 
         doc = frappe.new_doc(doctype)
@@ -72,7 +76,14 @@ class BulkIssue(Document):
             doc.db_insert()
         except:
             frappe.log_error(frappe.get_traceback())
-        else:
+
+
+        trigger_discord_notifications({
+            "doc": doc,
+            "is_new": True,
+        })
+
+        if auto_commit:
             frappe.db.commit()
 
             # todo: trigger method to send email to admin

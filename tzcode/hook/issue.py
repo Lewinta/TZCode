@@ -93,6 +93,12 @@ def on_update(doc, method):
 
 
 def close_issue(doc):
+    try:
+        _close_issue(doc)
+    except Exception as e:
+        pass
+
+def _close_issue(doc):
     if not doc.customer:
         return
 

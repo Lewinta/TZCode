@@ -4,15 +4,19 @@ from personal.hook.accounts_controller import cancel_gl_entries, delete_gl_entri
 from frappe.utils import add_months
 
 def before_insert(doc, method):
+	# update exchange rate
+	if not doc.dont_override_conversion_rate:
+		doc.conversion_rate = get_latest_exchange_rate(from_currency=doc.currency)
+
 	if doc.tipo_de_factura != 'Iguala':
 		return
 
 	year, month, day = str(add_months(doc.posting_date, -1)).split("-")
 	doc.remarks = f"{get_month_name(month)} {year}"
 
-	# update exchange rate
-	if not doc.dont_override_conversion_rate:
-		doc.conversion_rate = get_latest_exchange_rate(from_currency=doc.currency)
+def after_insert(doc, method):
+	# frappe.db.rollback()
+	...
 
 def on_submit(doc, method):
 	autoclose_so()

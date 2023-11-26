@@ -43,7 +43,10 @@ doctype_js = {
     "Task": "public/js/task.js",
     "Appraisal": "public/js/appraisal.js",
     "Supplier": "public/js/supplier.js",
+    "Module Profile": "public/js/module_profile.js",
+    "Payment Entry": "public/js/payment_entry.js",
 }
+
 doctype_list_js = {
     "Customer": "public/js/customer_list.js",
     "Issue": "public/js/issue_list.js",
@@ -120,15 +123,40 @@ fixtures = [
                     "Carta de Retención",
                     "Proveedor de Servicios",
                     "Contrato de Trabajo",
+                    "Carta de Trabajo",
                     "Orden de Venta Local",
                 )
             )
         }
     },
+    {
+        "doctype": "Role",
+        "filters": {
+            "name": (
+                "in", ( 
+                    "External Vendor",
+                )
+            )
+        }
+    },
+    {
+        "doctype": "Address",
+            "filters": { "name": "TZCode Billing-Billing" }   
+    },
+    {
+        "doctype": "Notification",
+            "filters": { "name": "Factura Generada" }   
+    },
+
+
 ]
 
 # Home Pages
 # ----------
+
+# website_route_rules = [
+#     {"from_route": "/<path:route>", "to_route": "404_handler"}
+# ]
 
 # application home page (will override Website Settings)
 # home_page = "login"
@@ -160,20 +188,12 @@ fixtures = [
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Issue": "tzcode.controllers.overrides.issue.get_permission_query_conditions",
+}
 
-# DocType Class
-# ---------------
-# Override standard doctype classes
-
-override_doctype_class = {
-    "Issue": "tzcode.controllers.overrides.issue.Issue"
+has_permission = {
+	"Issue": "tzcode.controllers.overrides.issue.has_permission",
 }
 
 
@@ -196,6 +216,7 @@ doc_events = {
     },
     "Sales Invoice": {
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
+        "after_insert": "tzcode.hook.sales_invoice.after_insert",
         "on_submit": "tzcode.hook.sales_invoice.on_submit",
         "on_cancel": "tzcode.hook.sales_invoice.on_cancel",
         "on_trash": "tzcode.hook.sales_invoice.on_trash",
@@ -225,6 +246,9 @@ doc_events = {
         "on_update": "tzcode.hook.todo.on_update",
         "validate": "tzcode.hook.todo.validate",
         "after_insert": "tzcode.hook.todo.after_insert",
+    },
+    "Module Profile" : {
+        "validate": "tzcode.hook.module_profile.validate",
     }
 }
 
@@ -268,6 +292,8 @@ override_whitelisted_methods = {
 #
 override_doctype_class = {
     "Appraisal": "tzcode.controllers.overrides.appraisal.Appraisal",
+    "Issue": "tzcode.controllers.overrides.issue.Issue",
+    "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost"
 }
 #
 # each overriding function accepts a `data` argument;

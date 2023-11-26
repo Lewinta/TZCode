@@ -1,0 +1,33 @@
+{
+ "category": "Modules",
+ "charts": [],
+ "creation": "2023-07-24 01:12:53.925710",
+ "developer_mode_only": 0,
+ "disable_user_customization": 1,
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "extends_another_page": 0,
+ "hide_custom": 1,
+ "icon": "file",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "label": "External",
+ "links": [],
+ "modified": "2023-07-24 01:12:53.925710",
+ "modified_by": "lewinvillar@tzcode.tech",
+ "module": "TZCode",
+ "name": "External",
+ "owner": "lewinvillar@tzcode.tech",
+ "pin_to_bottom": 0,
+ "pin_to_top": 1,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Module Profile",
+   "link_to": "Module Profile",
+   "type": "DocType"
+  }
+ ],
+ "shortcuts_label": "Tools"
+}

@@ -12,6 +12,7 @@ def validate(doc, method):
     """)
 
 def on_update(doc, method):
+    return
     if doc.reference_type == "Issue" and doc.reference_name:
         issue = frappe.get_doc("Issue", doc.reference_name)
         issue.status = doc.status

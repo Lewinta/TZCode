@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-23 23:51:21.019295",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "module",
+  "doctypes",
+  "main_cb",
+  "rate",
+  "amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "module",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Module",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "doctypes",
+   "fieldtype": "Int",
+   "label": "Doctypes",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "main_cb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate",
+   "non_negative": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "non_negative": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-07-24 01:21:19.949969",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Module Profile Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
