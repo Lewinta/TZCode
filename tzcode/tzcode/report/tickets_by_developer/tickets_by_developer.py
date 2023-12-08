@@ -54,14 +54,13 @@ def get_data(filters):
 	conditions = []
 
 	if filters.get("from_date"):
-		conditions.append(ISSUE.due_date >= filters.get("from_date"))
+		conditions.append(ISSUE.creation <= filters.get("from_date"))
 	if filters.get("to_date"):
-		conditions.append(ISSUE.due_date <= filters.get("to_date"))
+		conditions.append(ISSUE.creation <= filters.get("to_date"))
 
-	old_issues = Query.from_(USR).left_join(ISSUE).on(
-		(ISSUE.due_date < filters.get("from_date"))&
-		(ISSUE.resolver == USR.name)&
-		(USR.enabled == 1)
+	old_issues = Query.from_(ISSUE).left_join(USR).on(
+		(ISSUE.creation < filters.get("from_date"))&
+		(ISSUE.resolver == USR.name)
 	).select(
 		USR.full_name,
 		ConstantColumn(0).as_('open_issues'),
@@ -71,13 +70,11 @@ def get_data(filters):
 		ConstantColumn(0).as_('total_story_points'),
 		ConstantColumn(0).as_('on_time')
 	).where( 
-		(ISSUE.resolver == USR.name)&
 		(USR.enabled == 1)
 	).groupby(USR.name)
 	
 	current  = Query.from_(USR).left_join(ISSUE).on(
 		Criterion.all(conditions)
-		
 	).select(
 		USR.full_name,
 		fn.Sum(
@@ -109,7 +106,7 @@ def get_data(filters):
 		fn.Sum(query.held_issues).as_('held_issues'),
 		fn.Sum(query.total_story_points).as_('total_story_points'),
 		fn.Sum(query.on_time).as_('on_time')
-	).groupby(query.full_name).run(as_dict=True, )
+	).groupby(query.full_name).run(as_dict=True, debug=True )
 
 	result = []
 	total_issues  = sum([flt(d.open_issues) + flt(d.closed_issues) + flt(d.held_issues) + flt(d.old_open_issues) for d in data])

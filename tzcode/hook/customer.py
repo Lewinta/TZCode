@@ -1,5 +1,8 @@
 import frappe
 def on_update(doc, method):
+    if doc.is_new():
+        return
+
     frappe.db.sql("""
         UPDATE
             `tabCloud Server Host`
@@ -16,7 +19,7 @@ def on_update(doc, method):
     """, doc.name)
     
     filters = {"customer": doc.name}
-    servers = frappe.get_list("Cloud Server Host", filters, "parent", as_list=True)
+    servers = frappe.get_all("Cloud Server Host", filters, "parent", as_list=True)
     for name, in servers:
         srv = frappe.get_doc("Cloud Server", name)
         srv.save(ignore_permissions=True)

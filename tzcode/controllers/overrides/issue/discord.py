@@ -9,6 +9,8 @@ from frappe.utils import strip_html_tags
 
 from typing import Dict
 
+PUBLIC_URL_TEMPLATE = "{{ url }}/{{ doctype }}/{{ name }}?format={{ print_format|urlencode }}&key={{ key|urlencode }}"
+
 # this should be done in a doctype
 client_manager = {
     "AMALOG SRL": "miguel.higuera@tzcode.tech",
@@ -157,6 +159,7 @@ something_is_going_msg_template = """
 
 
 def trigger_discord_notifications(opts: Dict) -> None:
+    """opts example: { "doc": doc, "is_new": True }"""
     doc = opts["doc"]
 
     try:
@@ -252,7 +255,7 @@ def notify_of_workflow_state_change(before_save, doc):
         if "Support Manager" in user_roles:
             if doc.resolver:
                 """Notify Developer of the workflow_state change"""
-                
+
                 message = f"""
                     {ticket_ready_for_development_msg_template.format(**args)}
                     {footer_template.format(**args)}
@@ -508,9 +511,22 @@ def notify_channel(user, message):
     return response.status_code == 204
 
 
+
 def get_share_url(name):
     doctype = "Issue"
     doc = frappe.get_doc(doctype, name)
 
     key = doc.get_document_share_key()
-    return f"https://bo.tzcode.tech/issue/{name}?key={key}"
+    # return f"https://bo.tzcode.tech/issue/{name}?key={key}"
+
+    opts = {
+        "url": "https://bo.tzcode.tech",
+        "doctype": doctype,
+        "name": name,
+        "print_format": "Issue",
+        "key": key,
+    }
+
+    return frappe.render_template(
+        PUBLIC_URL_TEMPLATE, opts
+    )

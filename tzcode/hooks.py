@@ -216,10 +216,8 @@ doc_events = {
     },
     "Sales Invoice": {
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
-        "after_insert": "tzcode.hook.sales_invoice.after_insert",
         "on_submit": "tzcode.hook.sales_invoice.on_submit",
         "on_cancel": "tzcode.hook.sales_invoice.on_cancel",
-        "on_trash": "tzcode.hook.sales_invoice.on_trash",
     },
     "Sales Order": {
         "validate": "tzcode.hook.sales_order.validate",
@@ -247,9 +245,6 @@ doc_events = {
         "validate": "tzcode.hook.todo.validate",
         "after_insert": "tzcode.hook.todo.after_insert",
     },
-    "Module Profile" : {
-        "validate": "tzcode.hook.module_profile.validate",
-    }
 }
 
 # Scheduled Tasks
@@ -293,7 +288,8 @@ override_whitelisted_methods = {
 override_doctype_class = {
     "Appraisal": "tzcode.controllers.overrides.appraisal.Appraisal",
     "Issue": "tzcode.controllers.overrides.issue.Issue",
-    "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost"
+    "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost",
+    "Module Profile": "tzcode.controllers.overrides.module_profile.ModuleProfile",
 }
 #
 # each overriding function accepts a `data` argument;

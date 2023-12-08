@@ -1,5 +1,4 @@
 import frappe
-from personal.hook.accounts_controller import cancel_gl_entries, delete_gl_entries
 
 from frappe.utils import add_months
 
@@ -14,19 +13,11 @@ def before_insert(doc, method):
 	year, month, day = str(add_months(doc.posting_date, -1)).split("-")
 	doc.remarks = f"{get_month_name(month)} {year}"
 
-def after_insert(doc, method):
-	# frappe.db.rollback()
-	...
-
 def on_submit(doc, method):
 	autoclose_so()
 
 def on_cancel(doc, method):
 	reopen_so()
-	cancel_gl_entries(doc)
-
-def on_trash(doc, method):
-	delete_gl_entries(doc)
 
 def autoclose_so():
 	filters = {

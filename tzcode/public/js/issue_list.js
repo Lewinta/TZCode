@@ -46,6 +46,7 @@
 			]
 
 			if (frappe.user.has_role("Support Manager")) {
+				states.push("Closed")
 				states.push("Completed")
 			}
 
@@ -88,6 +89,7 @@
 			"Code Quality Passed": "blue",
 			"Code Quality Rejected": is_delayed ? "red" : "yellow",
 			"Completed": "green",
+			"Closed": "green",
 			"Duplicated": "gray",
 			"Forgotten": "gray",
 		}[doc.workflow_state]
@@ -103,6 +105,7 @@
 			"Duplicated",
 			"Code Quality Passed",
 			"Completed",
+			"Closed",
 		]
 
 		let _state = doc.workflow_state;
@@ -126,7 +129,9 @@
 		} else if (doc.workflow_state === "Pending") {
 			_state = "🆕 Pending"
 		} else if (doc.workflow_state === "Completed") {
-			_state = "✅ Completed"
+			_state = "🏁 Completed"
+		} else if (doc.workflow_state === "Closed") {
+			_state = "✅ Closed"
 		} else if (doc.workflow_state === "Duplicated") {
 			_state = "💢 Duplicated"
 		} else if (doc.workflow_state === "Forgotten") {

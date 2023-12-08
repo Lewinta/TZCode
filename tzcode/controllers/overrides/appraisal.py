@@ -3,7 +3,8 @@
 
 import frappe
 
-from erpnext.hr.doctype.appraisal.appraisal import Appraisal as ERPNextAppraisal
+from hrms.hr.doctype.appraisal.appraisal import Appraisal as ERPNextAppraisal
+from frappe.model import document
 
 class Appraisal(ERPNextAppraisal):
     def onload(self):
