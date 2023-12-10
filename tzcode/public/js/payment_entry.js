@@ -5,7 +5,12 @@ frappe.ui.form.on("Payment Entry", {
 });
 
 frappe.ui.form.on("Payment Entry Reference", {
-    isr(frm, doctype, name) {
+    // prevent this from running as this logic shouldnt be here in this app.
+    // to prevent it from running a undercored was added to the child field
+    // this logic was all handled in the dgii app... need to confirm with 
+    // Miguel why this is here and also with Lewin why all other changes from
+    // the dgii app weren't brought here.
+    _isr(frm, doctype, name) { 
         const { deductions, references } = frm.doc;
 
         const doc = frappe.get_doc(doctype, name);
