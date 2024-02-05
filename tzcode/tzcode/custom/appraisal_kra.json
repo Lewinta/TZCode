@@ -1,0 +1,35 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Appraisal KRA",
+ "links": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2024-01-13 09:13:35.591424",
+   "default_value": null,
+   "doc_type": "Appraisal KRA",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "kra",
+   "idx": 0,
+   "is_system_generated": 0,
+   "modified": "2024-01-13 09:13:35.591424",
+   "modified_by": "yefritavarez@tzcode.tech",
+   "module": "TZCode",
+   "name": "Appraisal KRA-kra-length",
+   "owner": "yefritavarez@tzcode.tech",
+   "parent": null,
+   "parentfield": null,
+   "parenttype": null,
+   "property": "length",
+   "property_type": "Int",
+   "row_name": null,
+   "value": "256"
+  }
+ ],
+ "sync_on_migrate": 1
+}

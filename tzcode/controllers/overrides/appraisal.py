@@ -3,10 +3,16 @@
 
 import frappe
 
-from hrms.hr.doctype.appraisal.appraisal import Appraisal as ERPNextAppraisal
-from frappe.model import document
+from hrms.hr.doctype.appraisal import appraisal
 
-class Appraisal(ERPNextAppraisal):
+class Appraisal(appraisal.Appraisal):
+    def before_insert(self):
+        if not self.from_appraisal_cycle:
+            frappe.throw(
+                "<p>I don't think you should create this document manually.</p>"
+                "<p>Please use the Appraisal Cycle document to create this document.</p>"
+            )
+
     def onload(self):
         self.load_additional_salary_if_exists()
 
