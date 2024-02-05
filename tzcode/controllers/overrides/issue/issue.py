@@ -18,13 +18,30 @@ class Issue(Document):
     #     })
 
     def validate(self):
+        self.auto_set_resolver_if_not_set()
         if not self.is_new():
             trigger_discord_notifications({"doc": self})
 
     def on_update(self):
         self.update_delivered_for_qa_if_reqd()
+        self.update_assignation_date_if_reqd()
         self.assign_to_resolver_if_not_assigned()
         self.assign_to_approver_if_not_assigned()
+
+    def auto_set_resolver_if_not_set(self):
+        if self.is_new():
+            return # don't do anything if this is a new record
+
+        if self.resolver:
+            return
+
+        db_doc = self.get_doc_before_save()
+        if not db_doc:
+            return
+
+        if self.workflow_state == "Working" \
+            and db_doc.workflow_state != self.workflow_state:
+            self.resolver = frappe.session.user
 
     def update_delivered_for_qa_if_reqd(self):
         # expected_state is the value that we are looking for
@@ -64,6 +81,74 @@ class Issue(Document):
 
         if shall_update_delivered_for_qa:
             self.db_set("delivered_for_qa", frappe.utils.now())
+
+    def update_assignation_date_if_reqd(self):
+        # the main idea of this method is to keep updated the assignation_date.
+        # it's going to gather some system information to do the lifting for two
+        # other utility methods.
+        db_doc = self.get_doc_before_save()
+
+        if not db_doc:
+            return "No doc before save... this is a new record."
+
+        if self.resolver or db_doc.resolver:
+            # let's do it the resolver's way
+
+            # and we simply need to update the assignation_date
+            if self.resolver == db_doc.resolver:
+                return # not much should happen if resolver didn't change
+            
+            # if the resolver changed, then we need to update the assignation_date
+            if self.resolver and not db_doc.resolver:
+                self.db_set("assignation_date", frappe.utils.now())
+                return
+            
+            # if the resolver was removed, then we need to update the assignation_date
+            if not self.resolver and db_doc.resolver:
+                self.db_set("assignation_date", None)
+                return
+        else:
+            # now, this is a bit more complicated.
+            # we are going to use the _assign field to know if the ticket
+            # was assigned to someone or not. the _assign field is a json
+            # array that contains the list of assignees. and we need to know
+            # if the assignees are developers or just implementers.
+
+            # there is a catch in here.
+            # usually developers self assign tickets to themselves with the intention
+            # to be the resolvers. rarely, they assign tickets to other developers (for not saying never).
+            #
+            # in the other hand, sometimes superiors assign a ticket to a developer which
+            # might not be the resolver, just to the mere purpose of researching or gathering information.
+            # in this case, the superior obviously is different then the assignee.
+            # later
+            
+            old_assignees = json.loads(
+                db_doc.get("_assign", default="[]"),
+            )
+
+            new_assignees = json.loads(
+                self.get("_assign", default="[]"),
+            )
+
+            # if the assignees are the same, then we don't need to do anything
+            if old_assignees == new_assignees:
+                return
+
+            # if the assignees are different, then we need to update the assignation_date
+            if old_assignees and not new_assignees:
+                self.db_set("assignation_date", None)
+                return
+
+            # if the assignees are different, then we need to update the assignation_date
+            if not old_assignees and new_assignees:
+                self.db_set("assignation_date", frappe.utils.now())
+                return
+
+            # # if the assignees are different, then we need to update the assignation_date
+            # if old_assignees != new_assignees:
+            #     self.db_set("assignation_date", frappe.utils.now())
+            #     return
 
     def assign_to_resolver_if_not_assigned(self):
         if not self.resolver:

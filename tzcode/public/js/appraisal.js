@@ -55,7 +55,7 @@ frappe.ui.form.on("Appraisal", {
             let btn = frm.add_custom_button(__("Create Additional Salary"), function() {
                 frappe.db.get_value(
                     "Salary Structure Assignment",
-                    {"employee": frm.doc.employee},
+                    {"employee": frm.doc.employee, "docstatus": 1},
                     "variable"
                 ).then(({message}) => {
                     let dialog = new frappe.ui.Dialog({
