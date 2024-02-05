@@ -250,23 +250,23 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"tzcode.tasks.all"
-# 	],
-# 	"daily": [
-# 		"tzcode.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"tzcode.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"tzcode.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"tzcode.tasks.monthly"
-# 	]
-# }
+scheduler_events = {
+	"all": [
+		"tzcode.tasks.all"
+	],
+	"daily": [
+		"tzcode.tasks.daily"
+	],
+	"hourly": [
+		"tzcode.tasks.hourly"
+	],
+	"weekly": [
+		"tzcode.tasks.weekly"
+	],
+	"monthly": [
+		"tzcode.tasks.monthly"
+	]
+}
 
 # Testing
 # -------
