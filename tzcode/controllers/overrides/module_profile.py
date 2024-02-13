@@ -5,7 +5,7 @@ from frappe.core.doctype.module_profile.module_profile import ModuleProfile as F
 class ModuleProfile(FrappeModuleProfile):
     def validate(self):
         self.calculate_totals()
-
+        
     def calculate_totals(self):
         self.fetch_module_info()
         self.selected_modules = len(self.module_details)
@@ -28,7 +28,7 @@ class ModuleProfile(FrappeModuleProfile):
         ).select(
             DT.module, 
             fn.Count(1).as_("doctypes"),
-        ).groupby( DT.module ).run(as_dict=True, debug=True)
+        ).groupby( DT.module ).run(as_dict=True)
         
         self.set("module_details", [])
         
@@ -36,6 +36,6 @@ class ModuleProfile(FrappeModuleProfile):
             self.append("module_details", {
                 "module": row.module,
                 "doctypes": row.doctypes,
-                "rate": 10,
-                "amount": row.doctypes * 10,
+                "rate": 15,
+                "amount": row.doctypes * 15,
             })

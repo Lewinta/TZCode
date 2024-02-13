@@ -5,197 +5,235 @@ import frappe
 from frappe.utils import flt
 from frappe.query_builder import CustomFunction, Criterion, Case, Query, functions as fn
 from frappe.query_builder.custom import ConstantColumn
+from tzcode.utils.utils import week_start, week_end
+
+ISSUE = frappe.qb.DocType("Issue")
+USER = frappe.qb.DocType("User")
+TS = frappe.qb.DocType("Timesheet")
+TSD = frappe.qb.DocType("Timesheet Detail")
+EMP = frappe.qb.DocType("Employee")
 
 def execute(filters=None):
-	if filters.get("summary"):	
-		return get_columns(), get_data(filters)
-	else:
-		return get_summary_columns(), get_summary_data(filters)
-
-
-def get_columns():
-	return [
-		
-		"Employee:Data:200",
-		"Old:Int:80",
-		"Open:Int:80",
-		"% Open:Percent:90",
-		"Closed:Int:80",
-		"% Closed:Percent:90",
-		"Held:Int:80",
-		"% Held:Percent:90",
-		"Total:Int:80",
-		"% Total:Percent:80",
-		"On Time:Int:80",
-		"% On Time:Percent:120",
-		"Story Points:Int:150",
-		"Score:Float:150",
-
-	]
-
-def get_summary_columns():
-	return [
-		"Issue:Link/Issue:150",
-		"Status:Data:100",
-		"Opening Date:Date:120",
-		"Due Date:Date:120",
-		"Resolution:Datetime:160",
-		"Allocated To:Data:120",
-		"Customer:Data:200",
-		"Estimated Points:Int:150",
-		"Subject:Data:400",
-	]
-
-def get_data(filters):
-	ISSUE = frappe.qb.DocType("Issue")
-	USR = frappe.qb.DocType("User")
-	If = CustomFunction('IF', ['condition', 'if', 'else'])
-
-	conditions = []
-
-	if filters.get("from_date"):
-		conditions.append(ISSUE.creation <= filters.get("from_date"))
-	if filters.get("to_date"):
-		conditions.append(ISSUE.creation <= filters.get("to_date"))
-
-	old_issues = Query.from_(ISSUE).left_join(USR).on(
-		(ISSUE.creation < filters.get("from_date"))&
-		(ISSUE.resolver == USR.name)
-	).select(
-		USR.full_name,
-		ConstantColumn(0).as_('open_issues'),
-		fn.Sum( Case().when(ISSUE.status.isin(['Cancelled','Resolved', 'Closed']), 0).else_(1)).as_('old_open_issues'),
-		ConstantColumn(0).as_('closed_issues'),
-		ConstantColumn(0).as_('held_issues'),
-		ConstantColumn(0).as_('total_story_points'),
-		ConstantColumn(0).as_('on_time')
-	).where( 
-		(USR.enabled == 1)
-	).groupby(USR.name)
+	if filters.get("type") == "Historical":	
+		return get_historical_columns(filters), get_historical_data(filters)
+	elif filters.get("type") == "Development":
+		return get_development_columns(filters), get_development_data(filters)
 	
-	current  = Query.from_(USR).left_join(ISSUE).on(
-		Criterion.all(conditions)
-	).select(
-		USR.full_name,
-		fn.Sum(
-			Case().when(ISSUE.status.isin(['Hold','Cancelled','Resolved', 'Closed']), 0).else_(1)
-		).as_('open_issues'),
-		ConstantColumn(0).as_('old_open_issues'),
-		fn.Sum(
-			Case().when(ISSUE.status.isin(['Resolved', 'Closed']), 1).else_(0)
-		).as_('closed_issues'),
-		fn.Sum(
-			Case().when(ISSUE.status == 'Hold', 1).else_(0)
-		).as_('held_issues'),
-		fn.Sum(
-			Case().when(ISSUE.estimated_points, ISSUE.estimated_points).else_(0)
-		).as_('total_story_points'),
-		fn.Sum(
-			Case().when(ISSUE.due_date < ISSUE.resolution_date, 1	).else_(0)
-		).as_('on_time'),
-	).where((ISSUE.resolver == USR.name)&
-		(USR.enabled == 1)  ).groupby(USR.name)
-
-	query =  current if not filters.get("old_issues") else current + old_issues
-
-	data = frappe.qb.from_(query).select(
-		query.full_name,
-		fn.Sum(query.open_issues).as_('open_issues'),
-		fn.Sum(query.old_open_issues).as_('old_open_issues'),
-		fn.Sum(query.closed_issues).as_('closed_issues'),
-		fn.Sum(query.held_issues).as_('held_issues'),
-		fn.Sum(query.total_story_points).as_('total_story_points'),
-		fn.Sum(query.on_time).as_('on_time')
-	).groupby(query.full_name).run(as_dict=True, debug=True )
-
-	result = []
-	total_issues  = sum([flt(d.open_issues) + flt(d.closed_issues) + flt(d.held_issues) + flt(d.old_open_issues) for d in data])
-	total_story_points = sum([flt(d.total_story_points) for d in data])
-	max_score = 5
-
-	for d in data:
-		total_row = flt(d.open_issues) + flt(d.closed_issues) + flt(d.held_issues) + flt(d.old_open_issues)
-		per_ontime = flt((flt(d.on_time) / total_issues) * 100, 2) if total_issues else 0
-		per_open = flt((flt(d.open_issues) / total_issues) * 100, 2) if total_issues else 0
-		per_closed = flt((flt(d.closed_issues) / total_issues) * 100, 2) if total_issues else 0
-		per_held = flt((flt(d.held_issues) / total_issues) * 100, 2) if total_issues else 0
-		per_total = flt(((flt(d.open_issues) + flt(d.closed_issues) + flt(d.held_issues)) / total_issues) * 100, 2) if total_issues else 0
-		score = flt((flt(d.on_time) / total_row) * max_score, 2) if total_row else 0
-		if not total_row:
-			continue
-
-		result.append(
-			(
-				d.full_name,			#Employee
-				d.old_open_issues,			#Old
-				d.open_issues,			#Open
-				per_open,  				#% Open
-				d.closed_issues,		#Closed
-				per_closed, 			#% Closed
-				d.held_issues,			#Held			
-				per_held,				#% Held
-				total_row,				#Total
-				per_total, 				#% Total
-				d.on_time,				#On Time
-				per_ontime,				#% On Time
-				d.total_story_points,	#Story Points
-				score,					#Score
-			)
-		)
-
-	return result			
-
-def get_summary_data(filters):
-	ISSUE = frappe.qb.DocType("Issue")
-	USR = frappe.qb.DocType("User")
-	If = CustomFunction('IF', ['condition', 'if', 'else'])
-	conditions = []
-
-	if filters.get("from_date"):
-		conditions.append(ISSUE.due_date >= filters.get("from_date"))
-	if filters.get("to_date"):
-		conditions.append(ISSUE.due_date <= filters.get("to_date"))
-	if filters.get("developer"):
-		conditions.append(ISSUE.resolver == filters.get("developer"))
+	elif filters.get("type") == "Implementation":
+		pass
 	else:
-		frappe.msgprint("Please select developer")
+		return [], []
 
+
+def get_historical_columns(filters):
+	if filters.get("summary"):
+		return [
+			"Old:Int:90",
+			"Current:Int:90",
+			"Held:Int:90",
+			"Open:Int:90",
+			"Open + Held:Int:120",
+			"Delivered:Int:100",
+			"Closed:Int:90",
+		]
+	else:
+		return [
+			"Issue:Link/Issue:130",
+			"Remote Ref.:Data:130",
+			"Status:Data:80",
+			"State:Data:175",
+			"Opening Date:Date:120",
+			"Due Date:Date:100",
+			"Assigned On:Datetime:160",
+			"Delivered On:Datetime:160",
+			"Duration:Duration:140",
+			"Resolution:Datetime:160",
+			"Assigned:Data:120",
+			"Approver:Data:120",
+			"Customer:Data:200",
+			"Hours:Float:70",
+			"Points:Int:70",
+			"Subject:Data:1200",
+		]
 	
-	current =  Query.from_(ISSUE).join(USR).on(
-		(ISSUE.resolver == USR.name)&
-		(USR.enabled == 1)
-	).select(
-		ISSUE.name,
-		ISSUE.status,
-		ISSUE.opening_date,
-		ISSUE.due_date,
-		ISSUE.resolution_date,
-		USR.full_name,
-		ISSUE.customer,
-		ISSUE.estimated_points * 1,
-		ISSUE.subject
-	).where( Criterion.all(conditions) )
 
-	old = Query.from_(ISSUE).join(USR).on(
-		(ISSUE.resolver == USR.name)&
-		(USR.enabled == 1)
-	).select(
-		ISSUE.name,
-		ISSUE.status,
-		ISSUE.opening_date,
-		ISSUE.due_date,
-		ISSUE.resolution_date,
-		USR.full_name,
-		ISSUE.customer,
-		ISSUE.estimated_points * 1,
-		ISSUE.subject
+def get_historical_data(filters):
+	from_time = filters.get("from_date") + " 00:00:00"
+	to_time = filters.get("to_date") + " 23:59:59"
+	workflow_state = filters.get("workflow_state")
+	employee = filters.get("employee")
+	current_condition = [
+		ISSUE.creation >= from_time,
+		ISSUE.creation <= to_time
+	]
+	current_closed_condition = [
+		ISSUE.delivered_for_qa >= from_time,
+		ISSUE.delivered_for_qa <= to_time,
+		ISSUE.status.isin(['Resolved', 'Closed']),
+		ISSUE.workflow_state != 'Duplicated',
+	]
+	old_condition =  [
+		~ISSUE.status.isin(['Cancelled','Resolved', 'Closed']),
+	 	ISSUE.creation < filters.get("from_date")
+	]
+	current_delivered = [
+		ISSUE.delivered_for_qa >= from_time,
+		ISSUE.delivered_for_qa <= to_time,
+		ISSUE.workflow_state.isin(['Ready for QA', 'Code Quality Passed'])
+	]
+	
+	if workflow_state:
+		current_condition.append(ISSUE.workflow_state == workflow_state)
+		current_closed_condition.append(ISSUE.workflow_state == workflow_state)
+		current_delivered.append(ISSUE.workflow_state == workflow_state)
+	
+	if employee:
+		current_condition.append(ISSUE.resolver == employee)
+		current_closed_condition.append(ISSUE.resolver == employee)
+		old_condition.append(employee == fn.Coalesce(ISSUE.resolver, '-'))
+		current_delivered.append(ISSUE.resolver == employee)
+
+	resolver = Query.from_(USER).select(USER.full_name).where(USER.name == fn.Coalesce(ISSUE.resolver, '-'))
+	approver = Query.from_(USER).select(USER.full_name).where(USER.name == fn.Coalesce(ISSUE.approver, '-'))
+	hours = Query.from_(TS).join(TSD).on(TS.name == TSD.parent).join(EMP).on(TS.employee == EMP.name).select(
+		fn.Sum(TSD.hours).as_('hours')
 	).where(
-		(ISSUE.resolver == filters.get("developer"))&
-		(~ISSUE.status.isin(['Cancelled','Resolved', 'Closed']))&
-		(ISSUE.due_date < filters.get("from_date")) 
+		(TSD.parenttype == 'Timesheet')&
+		(TSD.issue == ISSUE.name)&
+		(EMP.user_id == fn.Coalesce(ISSUE.resolver, '-'))
 	)
-	query = current if not filters.get("old_issues") else current + old
-	return frappe.qb.from_(query).select('*').orderby(query.due_date).run()
-
 	
+	
+	if filters.get("summary"):
+		return frappe.qb.from_(ISSUE).select(
+			fn.Sum(Case().when(Criterion.all(old_condition), 1).else_(0)).as_('old_open_issues'),
+			fn.Sum(Case().when(Criterion.all(current_condition), 1).else_(0)).as_('current_open_issues'),
+			fn.Sum(Case().when(ISSUE.status == 'Hold', 1).else_(0)).as_('held_issues'),
+			fn.Sum(Case().when(~ISSUE.status.isin(['Resolved', 'Closed', 'Hold']), 1).else_(0)).as_('open_issues'),
+			fn.Sum(Case().when(~ISSUE.status.isin(['Resolved', 'Closed']), 1).else_(0)).as_('open_and_held_issues'),
+			fn.Sum(Case().when(Criterion.all(current_delivered), 1).else_(0)).as_('current_delivered'),
+			fn.Sum(Case().when(Criterion.all(current_closed_condition), 1).else_(0)).as_('closed_issues'),
+		).run(debug=False)
+	else:
+		fields = [
+			ISSUE.name,
+			ISSUE.remote_reference,
+			ISSUE.status,
+			ISSUE.workflow_state,
+			ISSUE.opening_date,
+			ISSUE.due_date,
+			ISSUE.assignation_date,
+			ISSUE.delivered_for_qa,
+			(ISSUE.delivered_for_qa - ISSUE.assignation_date).as_('time_to_resolution'),
+			ISSUE.resolution_date,
+			resolver,
+			approver,
+			ISSUE.customer,
+			hours,
+			ISSUE.estimated_points * 1,
+			ISSUE.subject
+		]
+		
+		if workflow_state:
+			all_open =  Query.from_(ISSUE).select(*fields).where( ~ISSUE.status.isin(['Resolved', 'Closed', 'Hold'])& (ISSUE.workflow_state == workflow_state) )
+		else:
+			all_open =  Query.from_(ISSUE).select(*fields).where( ~ISSUE.status.isin(['Resolved', 'Closed', 'Hold']) )
+		current_issues =  Query.from_(ISSUE).select(*fields).where( Criterion.all(current_condition) )
+		current_closed =  Query.from_(ISSUE).select(*fields).where( Criterion.all(current_closed_condition) )
+	
+		return frappe.qb.from_(all_open + current_issues + current_closed).select('*').run(debug=False)
+		
+
+def get_development_columns(filters):
+	dashboard = filters.get("dashboard") 
+		
+	if filters.get("summary"):
+		return [
+			"Employee:Data:130",
+			"Hours:Float:100" if  dashboard else "Hours:Duration:100",
+			"Delivered:Int:100",
+			"Points:Int:100",
+		]
+	else:
+		return [
+			"Employee:Data:130",
+			"Issue:Link/Issue:130",
+			"Status:Data:80",
+			"State:Data:175",
+			"Delivered On:Datetime:160",
+			"Customer:Data:200",
+			"Hours:Duration:100",
+			"Points:Int:70",
+			"Subject:Data:1200",
+		]
+
+
+def get_development_data(filters):
+	from_date = filters.get("from_date") or str(week_start())
+	to_date = filters.get("to_date") or str(week_end())
+
+	dashboard = filters.get("dashboard")
+	
+	if not filters.get("from_date") or not filters.get("to_date"):
+		dashboard = True
+	
+	from_time = from_date + " 00:00:00"
+	to_time = to_date + " 23:59:59"
+	
+	resolver = Query.from_(USER).select(USER.full_name).where(USER.name == fn.Coalesce(ISSUE.resolver, '-'))
+	
+	current_condition = [
+		ISSUE.delivered_for_qa >= from_time,
+		ISSUE.delivered_for_qa <= to_time,
+		ISSUE.workflow_state.isin(['Ready for QA', 'Code Quality Passed', 'Closed'])
+	]
+
+	hours_dashboard = Query.from_(TS).join(TSD).on(TS.name == TSD.parent).join(EMP).on(TS.employee == EMP.name).select(
+		fn.Sum(TSD.hours).as_('hours')
+	).where(
+		(TSD.parenttype == 'Timesheet')&
+		(TSD.issue == ISSUE.name)&
+		(EMP.user_id == fn.Coalesce(ISSUE.resolver, '-'))
+	)
+
+	hours_report = Query.from_(TS).join(TSD).on(TS.name == TSD.parent).join(EMP).on(TS.employee == EMP.name).select(
+		fn.Sum(TSD.hours * 3600).as_('hours')
+	).where(
+		(TSD.parenttype == 'Timesheet')&
+		(TSD.issue == ISSUE.name)&
+		(EMP.user_id == fn.Coalesce(ISSUE.resolver, '-'))
+	)
+
+	hours = hours_dashboard if dashboard else hours_report
+
+	if filters.get("summary"):
+		return frappe.qb.from_(ISSUE).select(
+			resolver,
+			fn.Sum(hours),	
+			fn.Count(1),
+			fn.Sum(ISSUE.estimated_points * 1)
+		).where(
+			Criterion.all(current_condition)
+		).groupby(ISSUE.resolver).run(debug=False)
+	else:
+		return frappe.qb.from_(ISSUE).select(
+			resolver,
+			ISSUE.name,
+			ISSUE.status,
+			ISSUE.workflow_state,
+			ISSUE.delivered_for_qa,
+			ISSUE.customer,
+			hours,
+			ISSUE.estimated_points * 1,
+			ISSUE.subject
+		).where(
+			Criterion.all(current_condition)
+		).run(debug=False)
+
+def get_implementarion_columns(filters):
+	pass
+
+
+def get_implementarion_data(filters):
+	pass
 	

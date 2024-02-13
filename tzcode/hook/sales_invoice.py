@@ -13,6 +13,37 @@ def before_insert(doc, method):
 	year, month, day = str(add_months(doc.posting_date, -1)).split("-")
 	doc.remarks = f"{get_month_name(month)} {year}"
 
+def before_print(doc, method, settings):
+	print = frappe._dict({})
+	print.comp = frappe.get_value(
+		"Comprobantes Conf",
+		{"tax_category": doc.tax_category},
+		["expiration", "description", "expiration"]
+		, as_dict=True
+	)
+	print.address = frappe.get_value(
+		"Address",
+		{"is_your_company_address":1},
+		["address_line1", "city","state", "phone", "fax"],
+		as_dict=True
+	)
+	print.contact = frappe.get_value(
+		"Contact",
+		doc.contact_person,
+		["first_name", "last_name", "mobile_no", "email_id"],
+		as_dict=True
+	)
+	print.owner_fullname = frappe.get_value("User", doc.owner, "full_name")
+	print.return_against_ncf = frappe.get_value("Sales Invoice", doc.return_against, "ncf")
+	print.contact = frappe.get_value(
+		"Contact",
+		doc.contact_person, 
+		["first_name", "last_name","mobile_no", "email_id"]
+		, as_dict=True
+	)
+	
+	doc.print = print
+
 def on_submit(doc, method):
 	autoclose_so()
 

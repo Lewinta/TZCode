@@ -1,0 +1,28 @@
+{
+ "cards": [
+  {
+   "card": "Issue Count"
+  },
+  {
+   "card": "Monthly Total Points"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Monkey Performance",
+   "width": "Full"
+  }
+ ],
+ "creation": "2024-01-25 23:58:45.350511",
+ "dashboard_name": "Developers Performance",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2024-01-26 00:07:44.339919",
+ "modified_by": "yefritavarez@tzcode.tech",
+ "module": "TZCode",
+ "name": "Developers Performance",
+ "owner": "yefritavarez@tzcode.tech"
+}

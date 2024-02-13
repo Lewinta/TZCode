@@ -53,28 +53,51 @@ frappe.ui.form.on("Appraisal", {
             });
         } else {
             let btn = frm.add_custom_button(__("Create Additional Salary"), function() {
-                frappe.db.get_value(
-                    "Salary Structure Assignment",
-                    {"employee": frm.doc.employee, "docstatus": 1},
-                    "variable"
-                ).then(({message}) => {
-                    let dialog = new frappe.ui.Dialog({
-                        title,
-                        fields,
-                        primary_action_label: __("Create"),
-                        primary_action(values) {
-                            const method = "create_additional_salary";
-                            frm.call(method, values)
-                                .then(({ message: name }) => {
-                                    // get name of newly created doc and redirect to it
-                                    frappe.set_route("Form", "Additional Salary", name);
-                                });
-                        }
-                    })
-                    const amount = flt(frm.doc.total_score) / 5.0 * flt(message.variable);
-                    dialog.set_value("amount", amount);  
-                    dialog.show();
-                })
+                // frappe.db.get_value(
+                //     "Salary Structure Assignment",
+                //     {"employee": frm.doc.employee, "docstatus": 1},
+                //     "variable"
+                // ).then(({message}) => {
+                //     let dialog = new frappe.ui.Dialog({
+                //         title,
+                //         fields,
+                //         primary_action_label: __("Create"),
+                //         primary_action(values) {
+                //             const method = "create_additional_salary";
+                //             frm.call(method, values)
+                //                 .then(({ message: name }) => {
+                //                     // get name of newly created doc and redirect to it
+                //                     frappe.set_route("Form", "Additional Salary", name);
+                //                 });
+                //         }
+                //     })
+
+                //     const amount = flt(frm.doc.total_score) / 5.0 * flt(message.variable);
+                //     dialog.set_value("amount", amount);  
+                //     dialog.show();
+                // })
+
+                const method = "tzcode.controllers.overrides.appraisal.get_amount_from_additional_salaries";
+                const args = { "appraisal": frm.doc.name };
+                frappe.call(method, args)
+                    .then(({ message: amount }) => {
+                        let dialog = new frappe.ui.Dialog({
+                            title,
+                            fields,
+                            primary_action_label: __("Create"),
+                            primary_action(values) {
+                                const method = "create_additional_salary";
+                                frm.call(method, values)
+                                    .then(({ message: name }) => {
+                                        // get name of newly created doc and redirect to it
+                                        frappe.set_route("Form", "Additional Salary", name);
+                                    });
+                            }
+                        });
+
+                        dialog.set_value("amount", amount);  
+                        dialog.show();
+                    });
             })
             btn.addClass("btn-primary");
         }

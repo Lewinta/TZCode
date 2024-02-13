@@ -1,0 +1,42 @@
+{
+ "chart_name": "Monkey Performance",
+ "chart_type": "Report",
+ "creation": "2024-01-26 00:00:59.308460",
+ "custom_options": "{\"x_field\": \"resolver\", \"chart_type\": \"Bar\", \"y_axis_fields\": [{\"idx\": 1, \"__islocal\": true, \"name\": \"row 1\", \"y_field\": \"total_points\", \"color\": \"#29CD42\"}, {\"idx\": 2, \"__islocal\": true, \"name\": \"row 2\", \"y_field\": \"issue_count\", \"color\": \"#ECAD4B\"}, {\"idx\": 3, \"__islocal\": true, \"name\": \"row 3\", \"y_field\": \"avg_points\", \"color\": \"#CB2929\"}], \"y_fields\": [\"total_points\", \"issue_count\", \"avg_points\"], \"colors\": [\"#29CD42\", \"#ECAD4B\", \"#CB2929\"]}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{\"starting_date\":\"frappe.datetime.month_start()\",\"ending_date\":\"frappe.datetime.month_end()\"}",
+ "filters_json": "{}",
+ "group_by_type": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "modified": "2024-01-26 00:04:55.698919",
+ "modified_by": "yefritavarez@tzcode.tech",
+ "module": "TZCode",
+ "name": "Monkey Performance",
+ "number_of_groups": 0,
+ "owner": "yefritavarez@tzcode.tech",
+ "report_name": "Monkey Avg Points",
+ "roles": [],
+ "time_interval": "Yearly",
+ "timeseries": 0,
+ "timespan": "Last Year",
+ "type": "Bar",
+ "use_report_chart": 0,
+ "x_field": "resolver",
+ "y_axis": [
+  {
+   "color": "#29CD42",
+   "y_field": "total_points"
+  },
+  {
+   "color": "#ECAD4B",
+   "y_field": "issue_count"
+  },
+  {
+   "color": "#CB2929",
+   "y_field": "avg_points"
+  }
+ ]
+}

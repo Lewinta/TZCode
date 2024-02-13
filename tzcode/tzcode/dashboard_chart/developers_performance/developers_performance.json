@@ -1,0 +1,41 @@
+{
+ "chart_name": "Developers Performance",
+ "chart_type": "Report",
+ "creation": "2023-09-18 17:16:16.334657",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{}",
+ "filters_json": "{\"type\":\"Development\",\"summary\":1,\"dashboard\":1,\"from_date\":\"2024-02-11\",\"to_date\":\"2024-02-17\"}",
+ "group_by_type": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "modified": "2024-02-12 21:56:55.627577",
+ "modified_by": "lewinvillar@tzcode.tech",
+ "module": "TZCode",
+ "name": "Developers Performance",
+ "number_of_groups": 0,
+ "owner": "lewinvillar@tzcode.tech",
+ "report_name": "Tickets By Developer",
+ "roles": [],
+ "time_interval": "Yearly",
+ "timeseries": 0,
+ "timespan": "Last Year",
+ "type": "Bar",
+ "use_report_chart": 0,
+ "x_field": "employee",
+ "y_axis": [
+  {
+   "color": "#4F9DD9",
+   "y_field": "hours"
+  },
+  {
+   "color": "#EC864B",
+   "y_field": "delivered"
+  },
+  {
+   "color": "#ED6396",
+   "y_field": "points"
+  }
+ ]
+}

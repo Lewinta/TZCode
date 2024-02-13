@@ -6,7 +6,8 @@ import frappe
 
 from frappe.model.document import Document
 from frappe.desk.form.assign_to import add as do_assignation
-
+from frappe.utils import now_datetime, nowdate
+from datetime import datetime
 from .discord import trigger_discord_notifications
 
 
@@ -21,6 +22,8 @@ class Issue(Document):
         self.auto_set_resolver_if_not_set()
         if not self.is_new():
             trigger_discord_notifications({"doc": self})
+        
+        self.set_resolution_date()
 
     def on_update(self):
         self.update_delivered_for_qa_if_reqd()
@@ -124,11 +127,11 @@ class Issue(Document):
             # later
             
             old_assignees = json.loads(
-                db_doc.get("_assign", default="[]"),
+                db_doc.get("_assign") or "[]",
             )
 
             new_assignees = json.loads(
-                self.get("_assign", default="[]"),
+                self.get("_assign") or "[]",
             )
 
             # if the assignees are the same, then we don't need to do anything
@@ -150,6 +153,13 @@ class Issue(Document):
             #     self.db_set("assignation_date", frappe.utils.now())
             #     return
 
+    def set_resolution_date(self):
+        if self.status not in ("Resolved", "Closed"):
+            self.resolution_date = None
+            return
+        if not self.resolution_date:
+            self.resolution_date = frappe.utils.now()
+        
     def assign_to_resolver_if_not_assigned(self):
         if not self.resolver:
             return "No resolver, no assign"
@@ -257,6 +267,80 @@ class Issue(Document):
         )
 
 
+@frappe.whitelist()
+def get_open_timers(issue_name, user):
+    TS = frappe.qb.DocType("Timesheet")
+    TSD = frappe.qb.DocType("Timesheet Detail")
+    EMP = frappe.qb.DocType("Employee")
+
+    return frappe.qb.from_(TS).join(TSD).on(
+        TS.name == TSD.parent,
+    ).join(EMP).on(
+        TS.employee == EMP.name
+    ).select(
+        TS.name.as_("timesheet"),
+        TSD.name.as_("log_name"),
+        TSD.activity_type,
+        TSD.expected_hours,
+        TSD.issue,
+        TSD.from_time
+    ).where(
+        (TSD.issue == issue_name)&
+        (EMP.user_id == user)&
+        (EMP.status == 'Active')&
+        (TSD.completed == 0)
+    ).run(as_dict=True)
+
+
+@frappe.whitelist()
+def create_timelogs(activity_type, expected_hours, issue):
+    EMP = frappe.qb.DocType("Employee")
+    TS = frappe.qb.DocType("Timesheet")
+    today = frappe.utils.nowdate()
+    ts = None
+
+    timesheets = frappe.qb.from_(TS).join(EMP).on(
+        TS.employee == EMP.name
+    ).select(
+        TS.name
+    ).where(
+        (EMP.user_id == frappe.session.user)&
+        (EMP.status == 'Active')&
+        (TS.start_date == today)&
+        (TS.docstatus == 0)
+    ).run(as_dict=True)
+    
+    if timesheets:
+        ts = frappe.get_doc("Timesheet", timesheets[0].name)
+    else:
+        ts = frappe.new_doc("Timesheet")
+        ts.employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user})
+        ts.start_date = today
+        ts.en_date = today
+    
+    ts.append("time_logs", {
+        "activity_type": activity_type,
+        "from_time": now_datetime(),
+        "issue": issue,
+        "is_billable": 0
+    })
+    ts.save()
+
+
+@frappe.whitelist()
+def complete_timelogs(timesheet, log_name):
+    doc = frappe.get_doc("Timesheet", timesheet)
+    log = doc.get("time_logs", {"name": log_name})[0]
+    from_time = log.get("from_time")
+    to_time = now_datetime()
+    log.update({
+        "to_time": now_datetime(),
+        "completed": 1,
+        "hours": (to_time - from_time).total_seconds() / 3600
+    })
+    doc.save()
+    
+
 def get_permission_query_conditions(user=None):
     if user is None:
         user = frappe.session.user
@@ -266,7 +350,7 @@ def get_permission_query_conditions(user=None):
         `tabIssue`.workflow_state != "Completed"
         Or `tabIssue`.modified >= DATE_SUB(CURDATE(), INTERVAL 45 DAY)
     """
-
+    
 
 def has_permission():
     pass

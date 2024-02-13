@@ -1,0 +1,32 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.method!=\"send_mail\"",
+ "creation": "2024-02-05 18:54:32.604256",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Error Log",
+ "enabled": 1,
+ "event": "New",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>{{ doc.method }}</h3>\n\n<p>\n    Reference Type: {{ doc.reference_doctype }}\n    <br>Reference Name: {{ doc.reference_name }}\n</p>\n\n<pre>\n    {{ doc.error }}\n</pre>",
+ "modified": "2024-02-06 07:54:21.372171",
+ "modified_by": "yefritavarez@tzcode.tech",
+ "module": "TZCode",
+ "name": "New Error collected in BO",
+ "owner": "yefritavarez@tzcode.tech",
+ "recipients": [
+  {
+   "cc": "",
+   "receiver_by_document_field": "system_guard",
+   "receiver_by_role": ""
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "Notifications",
+ "sender_email": "tzcode.alerts@hotmail.com",
+ "subject": "New Error Log in bo.tzcode.tech"
+}

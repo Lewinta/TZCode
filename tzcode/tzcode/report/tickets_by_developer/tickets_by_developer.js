@@ -19,11 +19,25 @@ frappe.query_reports["Tickets By Developer"] = {
 			"default": frappe.datetime.week_end()
 		},
 		{
-			"fieldname": "developer",
-			"label": __("Developer"),
+			"fieldname": "employee",
+			"label": __("Employee"),
 			"fieldtype": "Link",
 			"options": "User",
-			"hidden": 1,
+		},
+		{
+			"fieldname": "workflow_state",
+			"label": __("Workflow State"),
+			"fieldtype": "Link",
+			"options": "Workflow State",
+		},
+		{
+			"fieldname": "type",
+			"label": __("Type"),
+			"fieldtype": "Select",
+			"options": "Historical\nDevelopment\nImplementation",
+			"reqd": 1,
+			"default": "Historical",
+			"hidden":0
 		},
 		{
 			"fieldname": "summary",
@@ -38,10 +52,17 @@ frappe.query_reports["Tickets By Developer"] = {
 			}
 		},
 		{
-			"fieldname": "old_issues",
-			"label": __("Include Old Tickets"),
+			"fieldname": "dashboard",
+			"label": __("Dashboard"),
 			"fieldtype": "Check",
+			"hidden": 1,
 			"default": 0,
-		},
+		}
+		// {
+		// 	"fieldname": "old_issues",
+		// 	"label": __("Include Old Tickets"),
+		// 	"fieldtype": "Check",
+		// 	"default": 0,
+		// },
 	],
 };

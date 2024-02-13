@@ -1,0 +1,30 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.department==\"Desarrollo - TZ\"",
+ "creation": "2024-02-05 09:10:52.394556",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Appraisal",
+ "enabled": 1,
+ "event": "New",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>\n    Hola {{ doc.employee_name }},\n</p>\n\n<p>\n    Este es un amable recordatorio para completar la evaluaci\u00f3n semanal correspondiente a la semana en curso que finaliza Ma\u00f1ana.\n    <br>Para completar la evaluaci\u00f3n, haz clic en el siguiente enlace:\n    <a href=\"https://bo.tzcode.tech/app/appraisal/{{ doc.name }}\">{{ doc.name }}</a>\n</p>\n\n<p>\n    Recuerda, participar en estas evaluaciones semanales es clave para:\n</p>\n\n<ul>\n    <li>\n        <span style=\"font-weight: 400\">Seguimiento de tu progreso</span>: Reflexionar sobre tus logros y desaf\u00edos te ayuda a mantenerte en el camino de tus objetivos e identificar \u00e1reas de mejora.\n    </li>\n    <li>\n        <span style=\"font-weight: 400\">Recibir feedback valioso</span>: Tu gerente revisar\u00e1 tus respuestas y te ofrecer\u00e1 orientaci\u00f3n personalizada durante una breve reuni\u00f3n.\n    </li>\n    <li>\n        <span style=\"font-weight: 400\">Optimizar tu rendimiento</span>: La comunicaci\u00f3n abierta sobre tu progreso permite ajustes oportunos y, en \u00faltima instancia, fomenta un mejor desempe\u00f1o.\n    </li>\n</ul>\n<p>\n    Si a\u00fan no lo has hecho, por favor, dedica unos minutos a completar la encuesta antes del inicio laboral la proxima\n    semana. La encuesta toma aproximadamente 5 minutos y cubre aspectos como: </p>\n<ul>\n    <li>Objetivos alcanzados esta semana</li>\n    <li>Desaf\u00edos enfrentados</li>\n    <li>Objetivos para la pr\u00f3xima semana</li>\n</ul>\n<p>\n    Una vez enviada, tu gerente se pondr\u00e1 en contacto contigo para programar una breve reuni\u00f3n para discutir tu feedback\n    y brindarte apoyo.\n</p>\n<p>\n    Agradecemos tu participaci\u00f3n activa en esta iniciativa. \u00a1Es crucial para tu crecimiento continuo y contribuye al\n    \u00e9xito general de nuestro equipo!\n</p>\n<p style=\"font-weight: 400\">\n    Atentamente,\n</p>\n<p style=\"font-weight: 600\">\n    El equipo de TzCode, S. R. L.\n</p>\n",
+ "modified": "2024-02-05 11:09:53.364154",
+ "modified_by": "yefritavarez@tzcode.tech",
+ "module": "TZCode",
+ "name": "New Appraisal - Desarrollo - Only",
+ "owner": "yefritavarez@tzcode.tech",
+ "recipients": [
+  {
+   "receiver_by_document_field": "user_id"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "Notifications",
+ "sender_email": "tzcode.alerts@hotmail.com",
+ "subject": "\u00a1Recordatorio de Evaluaci\u00f3n Semanal! Reflexiona sobre tu progreso esta semana"
+}

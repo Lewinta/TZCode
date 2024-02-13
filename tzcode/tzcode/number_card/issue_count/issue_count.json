@@ -1,0 +1,22 @@
+{
+ "creation": "2024-01-26 00:06:46.318792",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "filters_json": "{\"starting_date\":\"2024-01-01\",\"ending_date\":\"2024-01-31\"}",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Issue Count",
+ "modified": "2024-01-26 00:06:46.347550",
+ "modified_by": "yefritavarez@tzcode.tech",
+ "module": "TZCode",
+ "name": "Issue Count",
+ "owner": "yefritavarez@tzcode.tech",
+ "report_field": "issue_count",
+ "report_function": "Sum",
+ "report_name": "Monkey Avg Points",
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "type": "Report"
+}

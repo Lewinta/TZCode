@@ -17,7 +17,7 @@ class BulkIssue(Document):
         doctype = self.doctype
         name = self.name
         method = "create_issue"
-        queue = 'default'
+        queue = "default"
         timeout = 300
         now = False
 
@@ -28,6 +28,7 @@ class BulkIssue(Document):
             queue,
             timeout,
             now,
+            # after_commit=True,
         )
 
         frappe.msgprint("Bulk Issue created")
@@ -44,17 +45,33 @@ class BulkIssue(Document):
         now = False
 
         enqueue_doc(
-            doctype,
-            name,
-            method,
-            queue,
-            timeout,
-            now,
+            doctype=doctype,
+            name=name,
+            method=method,
+            queue=queue,
+            timeout=timeout,
+            now=now,
+            enqueue_after_commit=True,
         )
 
         frappe.msgprint("Bulk Issue updated")
 
+    def check_if_exists(self):
+        doctype = "Issue"
+
+        filters = {
+            "remote_reference": self.remote_reference,
+            "customer": self.customer,
+        }
+
+        return frappe.db.exists(doctype, filters)
+
+    @frappe.whitelist()
     def create_issue(self, auto_commit=True):
+        if self.check_if_exists():
+            return self.update_issue(auto_commit=auto_commit)
+
+
         doctype = "Issue"
 
         doc = frappe.new_doc(doctype)
@@ -74,8 +91,8 @@ class BulkIssue(Document):
 
         try:
             doc.db_insert()
-        except:
-            frappe.log_error(frappe.get_traceback())
+        except Exception as e:
+            frappe.log_error()
 
 
         trigger_discord_notifications({
@@ -94,46 +111,51 @@ class BulkIssue(Document):
             user=frappe.session.user
         )
 
-    def update_issue(self):
-        doctype = "Issue"
+    @frappe.whitelist()
+    def update_issue(self, auto_commit=True):
+        if not self.check_if_exists():
+            return self.create_issue(auto_commit=auto_commit)
+        else:
+            doctype = "Issue"
 
-        filters = {
-            "remote_reference": self.remote_reference,
-            "customer": self.customer,
-        }
+            filters = {
+                "remote_reference": self.remote_reference,
+                "customer": self.customer,
+            }
 
-        doc = frappe.get_doc(doctype, filters)
+            doc = frappe.get_doc(doctype, filters)
 
-        doc.update({
-            "subject": self.subject,
-            "status": self.status,
-            "customer": self.customer,
-            "raised_by": self.raised_by,
-            "remote_reference": self.remote_reference,
-            "priority": self.priority,
-            "description": self.description,
-        })
+            doc.update({
+                "subject": self.subject,
+                "status": self.status,
+                "customer": self.customer,
+                "raised_by": self.raised_by,
+                "remote_reference": self.remote_reference,
+                "priority": self.priority,
+                "description": self.description,
+            })
 
-        doc.flags.ignore_permissions = True
-        doc.flags.ignore_mandatory = True
+            doc.flags.ignore_permissions = True
+            doc.flags.ignore_mandatory = True
 
-        doc.modified = frappe.utils.now()
-        doc.modified_by = frappe.session.user
+            doc.modified = frappe.utils.now()
+            doc.modified_by = frappe.session.user
 
-        try:
-            doc.db_update()
-        except:
-            frappe.log_error(frappe.get_traceback())
+            try:
+                doc.db_update()
+            except Exception as e:
+                frappe.log_error()
 
-            # todo: trigger method to send email to admin
+                # todo: trigger method to send email to admin
 
-        frappe.db.commit()
+            if auto_commit:
+                frappe.db.commit()
 
-        publish_realtime(
-            "version_update",
-            message="Issue updated",
-            user=frappe.session.user
-        )
+            publish_realtime(
+                "version_update",
+                message="Issue updated",
+                user=frappe.session.user
+            )
 
     subject = None
     status = None

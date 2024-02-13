@@ -15,7 +15,7 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/tzcode/css/tzcode.css"
+app_include_css = "/assets/tzcode/css/tzcode.css"
 # app_include_js = "/assets/tzcode/js/tzcode.js"
 
 # include js, css files in header of web template
@@ -34,6 +34,7 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
+    "Additional Salary": "public/js/additional_salary.js",
     "Payroll Entry": "public/js/payroll_entry.js",
     "Purchase Invoice": "public/js/purchase_invoice.js",
     "ToDo": "public/js/todo.js",
@@ -190,6 +191,7 @@ fixtures = [
 
 permission_query_conditions = {
 	"Issue": "tzcode.controllers.overrides.issue.get_permission_query_conditions",
+	"Timesheet": "tzcode.controllers.overrides.timesheet.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -216,6 +218,7 @@ doc_events = {
     },
     "Sales Invoice": {
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
+        "before_print": "tzcode.hook.sales_invoice.before_print",
         "on_submit": "tzcode.hook.sales_invoice.on_submit",
         "on_cancel": "tzcode.hook.sales_invoice.on_cancel",
     },
@@ -287,6 +290,7 @@ override_whitelisted_methods = {
 #
 override_doctype_class = {
     "Appraisal": "tzcode.controllers.overrides.appraisal.Appraisal",
+    "Appraisal Cycle": "tzcode.controllers.overrides.appraisal_cycle.AppraisalCycle",
     "Issue": "tzcode.controllers.overrides.issue.Issue",
     "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost",
     "Module Profile": "tzcode.controllers.overrides.module_profile.ModuleProfile",

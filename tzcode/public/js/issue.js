@@ -1,11 +1,18 @@
 {
     function setup(_) {
         _hide_erpnext_buttons()
+        frappe.require("/assets/tzcode/js/timer.js");
     }
     
     function refresh(frm) {
-        _render_go_to_client_system_btn(frm)
-        _add_privileged_custom_buttons(frm)
+        // not sure if anyone else wants this functionality
+        _setup_user_preferences(frm)
+        if (["yefritavarez@tzcode.tech", "lewinvillar@tzcode.tech"].includes(frappe.session.user) ) {
+            _toggle_sidebar_if_needed(frm);
+        }
+        _add_privileged_custom_buttons(frm);
+        _render_go_to_client_system_btn(frm);
+        _add_timesheet_btn(frm);
     }
 
     function _hide_erpnext_buttons() {
@@ -31,6 +38,48 @@
         }
 
         _add_remove_remote_reference_btn(frm)
+        _add_toggle_preview_btn(frm)
+    }
+    
+    function _setup_user_preferences(frm) {
+        // 
+        const storageKey = "hide_sidebar";
+        const userPreference = sessionStorage.getItem(storageKey); 
+       
+        if (
+            userPreference === null
+        ) {
+            // let's set it to 1, this is default
+            sessionStorage.setItem(storageKey, 1);
+        }
+
+        jQuery("div[id=page-Issue] span[class=sidebar-toggle-btn]")
+            .off("click")
+            .click(async function(_) {
+                // await frappe.timeout(1); // let's wait 1 sec for the rendering to take place
+                const is_visible = frm.page.sidebar.is(":visible");
+                _toggle_sidebar({ frm, display: cint(is_visible) });
+
+                sessionStorage.setItem(storageKey, cint(is_visible));
+            })
+        ;
+    }
+    
+    // let's not wait for this function
+    async function _toggle_sidebar_if_needed(frm) {
+        const storageKey = "hide_sidebar";
+        const hide = sessionStorage.getItem(storageKey);
+
+        _toggle_sidebar({ frm, display: !cint(hide) });
+    }
+    
+    function _toggle_sidebar({ frm, display = false }) {
+        const { wrapper } = frm.page;
+
+        wrapper
+            .find("div.layout-side-section")
+            .toggle(display)
+        ;
     }
     
     function _render_go_to_client_system_btn(frm) {
@@ -45,6 +94,60 @@
                 })
                 .appendTo(wrapper)
         }
+    }
+    function _add_timesheet_btn(frm) {
+        if (frm.is_new())
+            return;
+        
+        const { doc } = frm;
+        const method = "tzcode.controllers.overrides.issue.issue.get_open_timers";
+        const args = { issue_name: doc.name, user: frappe.session.user };
+        
+        frappe.call({ method, args}).then( response => {
+            frm.timer = response.message;
+            let button = !response.message || response.message.length == 0 ? 'Start Timer' : 'Stop Timer';
+            let timer_btn = frm.add_custom_button(__(button), function() {
+                if (button === 'Start Timer')
+                    tzcode.issue.timer();
+                
+                else {
+                    let row = frm.timer[0];
+                    if(row.from_time > frappe.datetime.now_datetime())
+                        frappe.throw(__("The timer was started in the future. Please check the timelogs."));
+                    else {
+                        let timestamp = moment(frappe.datetime.now_datetime()).diff(moment(row.from_time),"seconds");
+                        tzcode.issue.timer(row, timestamp);
+                    }
+                }
+            });
+            timer_btn.removeClass('btn-default');
+            timer_btn.addClass(button === 'Start Timer'? "btn-success": "btn-danger");
+        });
+        
+
+		// 	frm.add_custom_button(__(button), function() {
+		// 		var flag = true;
+		// 		$.each(frm.doc.time_logs || [], function(i, row) {
+		// 			// Fetch the row for which from_time is not present
+		// 			if (flag && row.activity_type && !row.from_time){
+		// 				erpnext.timesheet.timer(frm, row);
+		// 				row.from_time = frappe.datetime.now_datetime();
+		// 				frm.refresh_fields("time_logs");
+		// 				frm.save();
+		// 				flag = false;
+		// 			}
+		// 			// Fetch the row for timer where activity is not completed and from_time is before now_time
+		// 			if (flag && row.from_time <= frappe.datetime.now_datetime() && !row.completed) {
+		// 				let timestamp = moment(frappe.datetime.now_datetime()).diff(moment(row.from_time),"seconds");
+		// 				erpnext.timesheet.timer(frm, row, timestamp);
+		// 				flag = false;
+		// 			}
+		// 		});
+		// 		// If no activities found to start a timer, create new
+		// 		if (flag) {
+		// 			erpnext.timesheet.timer(frm);
+		// 		}
+		// 	}).addClass("btn-primary");
     }
 
     function _add_remove_remote_reference_btn(frm) {
@@ -86,6 +189,18 @@
                 })
             }
         )
+    }
+
+    function _add_toggle_preview_btn(frm) {
+        const label = "Toggle Preview"
+        const action = _on_toggle_preview.bind(null, frm)
+        frm.add_custom_button(label, action)
+    }
+
+    function _on_toggle_preview(frm) {
+        const { doc } = frm
+        doc.docstatus = doc.docstatus === 0? 1: 0
+        frm.refresh_fields()
     }
 
     frappe.ui.form.on("Issue", {
