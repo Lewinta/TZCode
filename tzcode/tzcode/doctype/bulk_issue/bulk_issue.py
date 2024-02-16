@@ -11,27 +11,39 @@ from tzcode.controllers.overrides.issue.discord import (
     trigger_discord_notifications,
 )
 
+from . import locker
+
 
 class BulkIssue(Document):
     def after_insert(self):
-        doctype = self.doctype
-        name = self.name
-        method = "create_issue"
-        queue = "default"
-        timeout = 300
-        now = False
+        self.hsh = frappe.generate_hash()
+        # doctype = self.doctype
+        # name = self.name
+        # method = "create_issue"
+        # queue = "default"
+        # timeout = 300
+        # now = False
 
-        enqueue_doc(
-            doctype,
-            name,
-            method,
-            queue,
-            timeout,
-            now,
-            # after_commit=True,
-        )
+        # enqueue_doc(
+        #     doctype,
+        #     name,
+        #     method,
+        #     queue,
+        #     timeout,
+        #     now,
+        #     # after_commit=True,
+        # )
 
-        frappe.msgprint("Bulk Issue created")
+        # frappe.msgprint("Bulk Issue created")
+        if locker.is_locked():
+            locker.retry_after_5_secs(
+                self.create_issue,
+            )
+        else:
+            locker.acquire_lock(self.hsh)
+
+            self.create_issue()
+
 
     def on_update(self):
         if self.is_new():
@@ -57,6 +69,10 @@ class BulkIssue(Document):
         frappe.msgprint("Bulk Issue updated")
 
     def check_if_exists(self):
+        # lock the table
+        # this is just to prevent the creation of the same issue
+        # frappe.db.sql("Select Max(name) from `tabIssue` For Update")
+
         doctype = "Issue"
 
         filters = {
@@ -110,6 +126,8 @@ class BulkIssue(Document):
             message="Issue created",
             user=frappe.session.user
         )
+
+        locker.release_lock(self.hsh)
 
     @frappe.whitelist()
     def update_issue(self, auto_commit=True):

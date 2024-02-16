@@ -1,7 +1,8 @@
 {
+    frappe.require("/assets/tzcode/js/timer.js");
+
     function setup(_) {
         _hide_erpnext_buttons()
-        frappe.require("/assets/tzcode/js/timer.js");
     }
     
     function refresh(frm) {
@@ -13,6 +14,7 @@
         _add_privileged_custom_buttons(frm);
         _render_go_to_client_system_btn(frm);
         _add_timesheet_btn(frm);
+        _notify_of_duplicates_presence(frm);
     }
 
     function _hide_erpnext_buttons() {
@@ -148,6 +150,45 @@
 		// 			erpnext.timesheet.timer(frm);
 		// 		}
 		// 	}).addClass("btn-primary");
+    }
+
+    function _notify_of_duplicates_presence(frm) {
+        const { __onload: data } = frm.doc;
+        if (!data) {
+            return; // no data, no duplicates
+        }
+
+        if (data.duplicates.length === 0) {
+            return; // no duplicates
+        }
+
+        let heading = `
+            <h3>🚨 Looks like this ticket is duplicated with: </h3>
+        `;
+
+        let message = ``;
+
+        if (data.duplicates.length === 1) {
+            const [duplicate] = data.duplicates;
+            const link = `<a href="/app/issue/${duplicate.name}" target="_blank">${duplicate.name}</a>`;
+            
+            message = `
+                ▷ ${link}
+            `;
+        } else {
+            message = `
+                <ul>
+                    ${data.duplicates.map(duplicate => {
+                        const link = `<a href="/app/issue/${duplicate.name}" target="_blank">${duplicate.name}</a>`;
+                        return `<li>${link}</li>`;
+                    }).join("")}
+                </ul>
+            `;  
+        }
+
+        frm.set_intro(
+            `${heading} ${message}`, `red`
+        );
     }
 
     function _add_remove_remote_reference_btn(frm) {

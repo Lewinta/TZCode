@@ -12,6 +12,16 @@ from .discord import trigger_discord_notifications
 
 
 class Issue(Document):
+    def onload(self):
+        self.set_onload()
+
+    def set_onload(self):
+        parent = super()
+        parent.set_onload(
+            "duplicates",
+            self.get_duplicates(),
+        )
+
     # def after_insert(self):
     #     trigger_discord_notifications({
     #         "doc": self,
@@ -30,6 +40,25 @@ class Issue(Document):
         self.update_assignation_date_if_reqd()
         self.assign_to_resolver_if_not_assigned()
         self.assign_to_approver_if_not_assigned()
+
+    def get_duplicates(self):
+        # based off the customer and remote_reference
+        # key = (
+        #     "customer", "remote_reference"
+        # )
+
+        if not self.remote_reference:
+            return []
+
+        return frappe.get_all(
+            "Issue",
+            filters={
+                "customer": self.customer,
+                "remote_reference": self.remote_reference,
+                "name": ["!=", self.name],
+            },
+            fields=["name", "subject", "status"],
+        )
 
     def auto_set_resolver_if_not_set(self):
         if self.is_new():

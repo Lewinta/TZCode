@@ -7,9 +7,24 @@ from frappe import enqueue
 
 from frappe.utils import cstr
 
+from . import locker
+
 
 @frappe.whitelist()
 def create_issue(subject, status, customer, raised_by, remote_reference, priority=None, description="No Description"):
+    # unique hash for the function execution
+    hsh = frappe.generate_hash()
+
+    # allow only one of this function to run at a time
+    if locker.lock_exists():
+        # enqueue the function to run after 5 seconds
+        locker.queue_after_5_secs(
+            create_issue, subject, status, customer, raised_by,
+            remote_reference, priority, description
+        )
+    else:
+        locker.create_lock(hsh)
+
     doctype = "Bulk Issue"
     filters = {
         "remote_reference": remote_reference,
@@ -23,6 +38,9 @@ def create_issue(subject, status, customer, raised_by, remote_reference, priorit
     else:
         create_bulk_issue(subject, status, customer, raised_by,
                           remote_reference, priority, description)
+
+    # remove the lock
+    locker.remove_lock(hsh)
 
 
 def create_bulk_issue(subject, status, customer, raised_by, remote_reference, priority=None, description="No Description"):
