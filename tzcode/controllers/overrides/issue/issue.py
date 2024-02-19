@@ -40,6 +40,7 @@ class Issue(Document):
         self.update_assignation_date_if_reqd()
         self.assign_to_resolver_if_not_assigned()
         self.assign_to_approver_if_not_assigned()
+        self.close_timesheet_if_open()
 
     def get_duplicates(self):
         # based off the customer and remote_reference
@@ -216,6 +217,92 @@ class Issue(Document):
             return "Approver is the same, no assign"
 
         self.assign_to_approver(re_assign=not db_doc.approver)
+
+    def close_timesheet_if_open(self):
+        """Checks whether the related timesheet is still open and closes it if it is.
+        This will be true as long as the new state is "Ready for QA"
+        """
+
+        if self.has_state_changed_to("Ready for QA"):
+            # get any open timer for this issue
+            doctype = "Timesheet"
+            for detail, name in self.get_open_timelogs(
+                self.name, self.resolver or frappe.session.user
+            ):
+                doc = frappe.get_doc(doctype, name)
+
+                # find the time log and close it
+                for time_log in doc.time_logs:
+                    if time_log.name != detail:
+                        continue
+
+                    time_log.to_time = now_datetime()
+                    time_log.completed = 1
+                    time_log.hours = (
+                        time_log.to_time - time_log.from_time
+                    ).total_seconds() / 3600
+
+                    break # look no further
+
+                doc.save()
+
+                frappe.msgprint(
+                    f"""
+                        Timesheet {doc.name} has been closed for Issue {self.name} as it has been moved to "Ready for QA"
+                    """
+                )
+
+                break # don't overdo it
+            else:
+                frappe.msgprint(
+                    f"""
+                        <h4>
+                            Be Careful: No open timers found for Issue {self.name}
+                        </h4>
+
+                        <p class="muted">
+                            In the best interest of us all and for the next one,
+                            please make sure you log your time properly.
+                        </p>
+                    """, indicator="red", title="Warning"
+                )
+        else:
+            return "State is not Ready for QA"
+
+    def has_state_changed_to(self, state, true_for_new=False):
+        before_save = self.get_doc_before_save()
+
+        if not before_save:
+            return true_for_new
+
+        return self.workflow_state == state \
+            and before_save.workflow_state != state
+
+    def get_open_timelogs(self, issue, user):
+        return frappe.db.sql(
+            """
+            Select
+                detail.name, detail.parent
+            From
+                `tabTimesheet` As parent
+            Inner Join
+                `tabTimesheet Detail` As detail
+            On
+                parent.name = detail.parent
+                And detail.parenttype = "Timesheet"
+                And detail.parentfield = "time_logs"
+            Inner Join
+                `tabEmployee` As employee
+            On
+                parent.employee = employee.name
+            Where
+                IfNull(detail.to_time, "") = ""
+                And detail.issue = %s
+                And parent.docstatus = 0
+                And employee.user_id = %s
+            """, (issue, user)
+        )
+
 
     def assign_to_resolver(self, re_assign=False):
         # verify if the resolver is already assigned

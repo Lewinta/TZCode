@@ -23,8 +23,13 @@ def get_permission_query_conditions(user=None):
         f"tabTimesheet.start_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)"
     ]
 
-    if employee_id := get_employee_id(frappe.session.user) \
-        and "System Manager" not in frappe.get_roles():
+
+    employee_id = get_employee_id(frappe.session.user)
+    does_not_have_system_manager_role = (
+        "System Manager" not in frappe.get_roles()
+    )
+
+    if employee_id and does_not_have_system_manager_role:
         conditions.append(f"""
             tabTimesheet.employee = {employee_id!r}
         """)
