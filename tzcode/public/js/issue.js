@@ -2,22 +2,38 @@
     frappe.require("/assets/tzcode/js/timer.js");
 
     function setup(_) {
-        _hide_erpnext_buttons()
+        add_custom_css()
+        hide_erpnext_buttons()
     }
     
     function refresh(frm) {
         // not sure if anyone else wants this functionality
-        _setup_user_preferences(frm)
+        setup_user_preferences(frm)
         if (["yefritavarez@tzcode.tech", "lewinvillar@tzcode.tech"].includes(frappe.session.user) ) {
-            _toggle_sidebar_if_needed(frm);
+            toggle_sidebar_if_needed(frm);
         }
-        _add_privileged_custom_buttons(frm);
-        _render_go_to_client_system_btn(frm);
-        _add_timesheet_btn(frm);
-        _notify_of_duplicates_presence(frm);
+        add_privileged_custom_buttons(frm);
+        render_go_to_client_system_btn(frm);
+        add_timesheet_btn(frm);
+        notify_of_duplicates_presence(frm);
     }
 
-    function _hide_erpnext_buttons() {
+    function add_custom_css() {
+        const style = `
+            <style type="text/css">
+                div[id="page-Issue"]
+                .page-title .title-area .title-text {
+                    max-width: 150px !important;
+                }
+            </style>
+        `;
+
+        jQuery(style)
+            .appendTo(document.head)
+            ;
+    }
+
+    function hide_erpnext_buttons() {
         const style = document.createElement("style")
         style.innerHTML = `
             #page-Issue div[data-label=${__("Create")}],
@@ -28,7 +44,7 @@
         document.head.appendChild(style)
     }
     
-    function _add_privileged_custom_buttons(frm) {
+    function add_privileged_custom_buttons(frm) {
         // this is only for Support Manager... for now!
         const privileged_roles = [
             "Support Manager",
@@ -39,11 +55,11 @@
             return "Not a privileged user"
         }
 
-        _add_remove_remote_reference_btn(frm)
-        _add_toggle_preview_btn(frm)
+        add_remove_remote_reference_btn(frm)
+        add_toggle_preview_btn(frm)
     }
     
-    function _setup_user_preferences(frm) {
+    function setup_user_preferences(frm) {
         // 
         const storageKey = "hide_sidebar";
         const userPreference = sessionStorage.getItem(storageKey); 
@@ -60,7 +76,7 @@
             .click(async function(_) {
                 // await frappe.timeout(1); // let's wait 1 sec for the rendering to take place
                 const is_visible = frm.page.sidebar.is(":visible");
-                _toggle_sidebar({ frm, display: cint(is_visible) });
+                toggle_sidebar({ frm, display: cint(is_visible) });
 
                 sessionStorage.setItem(storageKey, cint(is_visible));
             })
@@ -68,14 +84,14 @@
     }
     
     // let's not wait for this function
-    async function _toggle_sidebar_if_needed(frm) {
+    async function toggle_sidebar_if_needed(frm) {
         const storageKey = "hide_sidebar";
         const hide = sessionStorage.getItem(storageKey);
 
-        _toggle_sidebar({ frm, display: !cint(hide) });
+        toggle_sidebar({ frm, display: !cint(hide) });
     }
     
-    function _toggle_sidebar({ frm, display = false }) {
+    function toggle_sidebar({ frm, display = false }) {
         const { wrapper } = frm.page;
 
         wrapper
@@ -84,7 +100,7 @@
         ;
     }
     
-    function _render_go_to_client_system_btn(frm) {
+    function render_go_to_client_system_btn(frm) {
         const { doc, fields_dict } = frm
 
         if (doc.host_url) {
@@ -97,7 +113,7 @@
                 .appendTo(wrapper)
         }
     }
-    function _add_timesheet_btn(frm) {
+    function add_timesheet_btn(frm) {
         if (frm.is_new())
             return;
         
@@ -152,7 +168,7 @@
 		// 	}).addClass("btn-primary");
     }
 
-    function _notify_of_duplicates_presence(frm) {
+    function notify_of_duplicates_presence(frm) {
         const { __onload: data } = frm.doc;
         if (!data) {
             return; // no data, no duplicates
@@ -191,13 +207,17 @@
         );
     }
 
-    function _add_remove_remote_reference_btn(frm) {
+    function add_remove_remote_reference_btn(frm) {
         const { doc } = frm
 
         const allowed_states = [
             "Pending",
             "Ack",
             "Ready for Development",
+            "Working",
+            "Duplicated",
+            "Closed",
+            "Forgotten",
         ]
 
         if (
@@ -205,12 +225,12 @@
             && allowed_states.includes(doc.workflow_state)
         ) {
             const label = "Remove Remote Reference"
-            const action = _on_remove_remote_reference.bind(null, frm)
+            const action = on_remove_remote_reference.bind(null, frm)
             frm.add_custom_button(label, action)
         }
     }
 
-    function _on_remove_remote_reference(frm) {
+    function on_remove_remote_reference(frm) {
         const { doc } = frm
 
         frappe.confirm(
@@ -232,13 +252,13 @@
         )
     }
 
-    function _add_toggle_preview_btn(frm) {
+    function add_toggle_preview_btn(frm) {
         const label = "Toggle Preview"
-        const action = _on_toggle_preview.bind(null, frm)
+        const action = on_toggle_preview.bind(null, frm)
         frm.add_custom_button(label, action)
     }
 
-    function _on_toggle_preview(frm) {
+    function on_toggle_preview(frm) {
         const { doc } = frm
         doc.docstatus = doc.docstatus === 0? 1: 0
         frm.refresh_fields()

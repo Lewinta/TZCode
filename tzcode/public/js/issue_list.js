@@ -110,22 +110,35 @@
 	function get_indicator(doc) {
 		const is_delayed = doc.due_date && doc.due_date < frappe.datetime.now_date();
 
+		// let's sort the colors:
+		// red -> real bad (delayed tickets)
+		// pink -> something bad (pending, ack)
+		// orange -> not so good (ready for development, on hold with a due date and not delayed, code quality rejected, acceptance criteria not met, working, ready for qa, deploying in production, ,)
+		// yellow -> not so bad ()
+		// purple -> neutral
+		// blue -> good
+		// cyan -> real good
+		// green -> real good
+		// darkgrey
+		// grey
+
 		const indicator = {
-			"Pending": "red",
-			"Ack": "orange",
-			"Ready for Development": is_delayed ? "red" : "orange",
-			"Working": is_delayed ? "red" : "yellow",
-			"Ready for QA": is_delayed ? "red" : "yellow",
-			"On Hold": "red",
+			"Pending": "pink",
+			"Ack": "pink",
+			"Ready for Development": is_delayed ? "red": "orange",
+			"Working": is_delayed ? "red": "yellow",
+			"Ready for QA": is_delayed ? "red": "purple",
+			"On Hold": "grey",
 			"Code Quality Passed": "blue",
 			"Acceptance Criteria Met": "blue",
-			"Code Quality Rejected": is_delayed ? "red" : "yellow",
-			"Acceptance Criteria not Met": is_delayed ? "red" : "yellow",
-			"Awaiting Customer": "blue",
+			"Code Quality Rejected": is_delayed ? "red": "orange",
+			"Acceptance Criteria not Met": is_delayed ? "red": "orange",
+			"Awaiting Customer": "cyan",
 			"Completed": "green",
 			"Closed": "green",
-			"Duplicated": "gray",
-			"Forgotten": "gray",
+			"Duplicated": "darkgrey",
+			"Deploying in Production": is_delayed ? "red": "yellow",
+			"Forgotten": "darkgrey",
 		}[doc.workflow_state]
 
 		let state = ": On Time"
@@ -176,7 +189,7 @@
 		} else if (doc.workflow_state === "Completed") {
 			_state = "🏁 Completed"
 		} else if (doc.workflow_state === "Closed") {
-			_state = "✅ Closed"
+			_state = "✅ 🤷‍♂️ Closed"
 		} else if (doc.workflow_state === "Duplicated") {
 			_state = "💢 Duplicated"
 		} else if (doc.workflow_state === "Forgotten") {
@@ -203,6 +216,35 @@
 		return name.split("-").slice(-1)[0]
 	}
 
+	function generate_hash({ length = 16 }) {
+		// Generate random bytes of specified length
+		const randomBytes = new Uint8Array(length);
+		window.crypto.getRandomValues(randomBytes);
+		
+		// Convert bytes to hexadecimal string
+		return randomBytes.reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), '');
+	}
+
+	function customer_formatter(value, doc) {
+		const indicator = [value, "", "customer,=," + doc.customer];
+		const title = __("Customer: {0}", [value]);
+
+		return `
+			<span
+				class="indicator-pill ${indicator[1]} filterable ellipsis"
+				data-filter="${indicator[2]}"
+				title="${title}"
+				style="
+					background: rgb(34,193,195);
+					background: linear-gradient(35deg, rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 0.23) 100%);
+					color: var(--text-on-green);
+				"
+			>
+				<span class="ellipsis"> ${__(indicator[0])}</span>
+			</span>
+		`;
+	}
+
 	frappe.listview_settings["Issue"] = {
 		refresh,
 		onload,
@@ -211,18 +253,34 @@
 		get_indicator,
 		formatters: {
 			customer: function (value, df, doc) {
-				if (frappe.session.user === "yefritavarez@tzcode.tech") {
-					if (doc.remote_reference) {
-						return `${doc.remote_reference} - ${doc.customer}`
+				if (
+					frappe.session.user === "yefritavarez@tzcode.tech"
+				) {
+					if (
+						doc.remote_reference
+					) {
+						return customer_formatter(
+							`${doc.remote_reference} - ${doc.customer}`, doc
+						);
 					}
 
-					return `${doc.customer}`
+					return customer_formatter(
+						`${doc.customer}`, doc
+					);
 				}
 
-				return doc.customer;
+				return customer_formatter(
+					doc.customer, doc
+				);
 			},
 			subject: function (value, df, doc) {
-				return `${get_cleaned_name(doc.name)} [${doc.estimated_points? cint(doc.estimated_points): "?"}] ${doc.subject}`
+				const name = get_cleaned_name(doc.name);
+				const points = doc.estimated_points? cint(doc.estimated_points): "?";
+				const subject = doc.subject;
+
+				return `
+					${name} [${points}] ${subject}
+				`;
 			}
 		},
 		hide_name_column: 1,
