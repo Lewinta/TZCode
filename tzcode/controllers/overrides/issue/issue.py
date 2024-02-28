@@ -9,6 +9,7 @@ from frappe.desk.form.assign_to import add as do_assignation
 from frappe.utils import now_datetime, nowdate
 from datetime import datetime
 from .discord import trigger_discord_notifications
+from frappe.query_builder import functions as fn
 
 
 class Issue(Document):
@@ -41,6 +42,7 @@ class Issue(Document):
         self.assign_to_resolver_if_not_assigned()
         self.assign_to_approver_if_not_assigned()
         self.close_timesheet_if_open()
+        self.check_for_existing_timer()
 
     def get_duplicates(self):
         # based off the customer and remote_reference
@@ -218,6 +220,50 @@ class Issue(Document):
 
         self.assign_to_approver(re_assign=not db_doc.approver)
 
+    def check_for_existing_timer(self):
+        """Checks whether there is an open timer for this issue and logs it if it exists.
+        """
+
+        if self.has_state_changed_to("Working"):
+            out = frappe.db.sql(
+                f"""
+                    Select
+                        detail.parent
+                    From
+                        `tabTimesheet Detail` As detail
+                    Inner Join
+                        `tabTimesheet` As parent
+                    On
+                        detail.parent = parent.name
+                        And detail.parenttype = "Timesheet"
+                        And detail.parentfield = "time_logs"
+                    Inner Join
+                        `tabEmployee` As employee
+                    On
+                        parent.employee = employee.name
+                    Where
+                        detail.issue = {self.name!r}
+                        And IfNull(detail.to_time, "") = ""
+                        And detail.docstatus = 0
+                        And employee.status = "Active"
+                        And employee.user_id = {frappe.session.user!r}
+                """, as_dict=True
+            )
+
+            if not out:
+                frappe.msgprint(
+                    f"""
+                        <h4>
+                            Be Careful: No open timers found for Issue {self.name}
+                        </h4>
+
+                        <p class="muted">
+                            In the best interest of us all and for the next one,
+                            please make sure you log your time properly.
+                        </p>
+                    """, indicator="red", title="Warning"
+                )
+
     def close_timesheet_if_open(self):
         """Checks whether the related timesheet is still open and closes it if it is.
         This will be true as long as the new state is "Ready for QA"
@@ -299,6 +345,7 @@ class Issue(Document):
                 IfNull(detail.to_time, "") = ""
                 And detail.issue = %s
                 And parent.docstatus = 0
+                And employee.status = "Active"
                 And employee.user_id = %s
             """, (issue, user)
         )
@@ -404,8 +451,37 @@ def get_open_timers(issue_name, user):
         (TSD.issue == issue_name)&
         (EMP.user_id == user)&
         (EMP.status == 'Active')&
-        (TSD.completed == 0)
+        (fn.Coalesce(TSD.to_time, "") == "")
     ).run(as_dict=True)
+
+    # return frappe.db.sql(
+    #     f"""
+    #         Select
+    #             timesheet.name as timesheet,
+    #             detail.name as log_name,
+    #             detail.activity_type,
+    #             detail.expected_hours,
+    #             detail.issue,
+    #             detail.from_time
+    #         From
+    #             `tabTimesheet` As timesheet
+    #         Inner Join
+    #             `tabTimesheet Detail` As detail
+    #         On
+    #             detail.parent = timesheet.name
+    #             And detail.parenttype = "Timesheet"
+    #             And detail.parentfield = "time_logs"
+    #         Inner Join
+    #             `tabEmployee` As employee
+    #         On
+    #             employee.name = timesheet.employee
+    #         Where
+    #             detail.issue = {issue_name!r}
+    #             And employee.user_id = {user!r}
+    #             And employee.status = "Active"
+    #             And IfNull(detail.to_time, "") = ""
+    #     """, as_dict=True
+    # )
 
 
 @frappe.whitelist()
@@ -461,12 +537,44 @@ def get_permission_query_conditions(user=None):
     if user is None:
         user = frappe.session.user
 
+    conditions = list()
+
     # skip those that are completed and have more than 30 days without any modifications
-    return """
-        `tabIssue`.workflow_state != "Completed"
-        Or `tabIssue`.modified >= DATE_SUB(CURDATE(), INTERVAL 45 DAY)
-    """
+    conditions.append("""
+        (
+            `tabIssue`.workflow_state != "Completed"
+            Or `tabIssue`.modified >= DATE_SUB(CURDATE(), INTERVAL 45 DAY)
+        )
+    """)
+
+    if "skip_completed_like_issues" in frappe.request.cookies:
+        # ignore this states "Completed, Closed, Duplicated, Forgotten"
+        conditions.append("""
+            `tabIssue`.workflow_state not in ("Completed", "Closed", "Duplicated", "Forgotten")
+        """)
+
+    return " and ".join(conditions)
     
 
 def has_permission():
     pass
+
+
+@frappe.whitelist()
+def toggle_skip_completed_like_issues():
+    if hasattr(frappe.local, "cookie_manager"):
+        if "skip_completed_like_issues" in frappe.request.cookies:
+            unskip_completed_like_issues()
+        else:
+            skip_completed_like_issues()
+    else:
+        frappe.throw("No cookie manager found")
+
+
+def skip_completed_like_issues():
+    frappe.local.cookie_manager.set_cookie("skip_completed_like_issues", "1")
+
+
+def unskip_completed_like_issues():
+    frappe.local.cookie_manager.delete_cookie("skip_completed_like_issues")
+    frappe.local.cookie_manager.set_cookie("skip_completed_like_issues", "0")

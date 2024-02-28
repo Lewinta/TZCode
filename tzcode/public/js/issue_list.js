@@ -37,6 +37,83 @@
 		if (frappe.session.user === "yefritavarez@tzcode.tech") {
 			hide_sidebar(listview)
 		}
+
+		add_skip_completed_btn(listview);
+	}
+
+	function add_skip_completed_btn(listview) {
+
+		if (
+			"toggle_completed" in listview.page.fields_dict
+		) {
+			return; // already added
+		}
+
+		// 
+		// const skip_completed = eval(
+		// 	frappe.get_cookie("skip_completed_like_issues")
+		// );
+
+		// if (skip_completed) {
+
+		// }
+	
+		const skip_completed_btn = listview.page.add_field({
+			fieldtype: "Button",
+			fieldname: "toggle_completed",
+			label: __("Toggle Completed"),
+			click(event) {
+				const method = "tzcode.controllers.overrides.issue.toggle_skip_completed_like_issues";
+				const args = null;
+
+				frappe.xcall(method, args)
+					.then(async _ => {
+						frappe.show_alert({
+							message: __("Filter toggled successfully!"),
+							indicator: "green",
+						});
+
+						frappe.dom.freeze("Wait a moment...");
+						await frappe.timeout(1);
+						listview.refresh();
+						frappe.dom.unfreeze();
+
+						if (frappe.session.user === "yefritavarez@tzcode.tech") {
+							const skip_completed = eval(
+								frappe.get_cookie("skip_completed_like_issues")
+							);
+
+							let message = "You are now seeing all the issues";
+
+							if (skip_completed) {
+								message = "You are now skipping the completed issues";
+							}
+
+							frappe.show_alert({
+								message: __(message),
+								indicator: "blue",
+							});
+						}
+					}, _ => {
+						frappe.show_alert({
+							message: __("An error occurred while trying to toggle the filter"),
+							indicator: "red",
+						});
+					});
+			}
+		}, listview.filter_area.standard_filters_wrapper);
+
+		const { $input: input, $wrapper: wrapper } = skip_completed_btn;
+
+		wrapper.removeAttr("title")
+		wrapper.removeAttr("data-original-title")
+		input
+			.addClass("btn-link")
+			.attr("title", "Resets all the filters") // add tooltip text
+			.attr("data-toggle", "tooltip") // enable tooltip
+			.attr("data-placement", "bottom") // place the tooltip on top of the item
+			.tooltip()
+		;
 	}
 
 	function onload(listview) {
@@ -235,9 +312,9 @@
 				data-filter="${indicator[2]}"
 				title="${title}"
 				style="
-					background: rgb(34,193,195);
-					background: linear-gradient(35deg, rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 0.23) 100%);
-					color: var(--text-on-green);
+					background: var(--brand-color);
+					background: linear-gradient(10deg, var(--bg-purple) 0%, var(--bg-pink) 100%);
+					color: var(--fg-on-pink);
 				"
 			>
 				<span class="ellipsis"> ${__(indicator[0])}</span>

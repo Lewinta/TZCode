@@ -18,9 +18,10 @@ def execute(filters=None):
 		return get_historical_columns(filters), get_historical_data(filters)
 	elif filters.get("type") == "Development":
 		return get_development_columns(filters), get_development_data(filters)
-	
 	elif filters.get("type") == "Implementation":
 		pass
+	elif filters.get("type") == "Timesheet":
+		return get_timesheet_columns(filters), get_timesheet_data(filters)
 	else:
 		return [], []
 
@@ -46,7 +47,7 @@ def get_historical_columns(filters):
 			"Due Date:Date:100",
 			"Assigned On:Datetime:160",
 			"Delivered On:Datetime:160",
-			"Duration:Duration:140",
+			"Duration:Float:140",
 			"Resolution:Datetime:160",
 			"Assigned:Data:120",
 			"Approver:Data:120",
@@ -150,7 +151,7 @@ def get_development_columns(filters):
 	if filters.get("summary"):
 		return [
 			"Employee:Data:130",
-			"Hours:Float:100" if  dashboard else "Hours:Duration:100",
+			"Hours:Float:100" if  dashboard else "Hours:Float:100",
 			"Delivered:Int:100",
 			"Points:Int:100",
 		]
@@ -162,7 +163,7 @@ def get_development_columns(filters):
 			"State:Data:175",
 			"Delivered On:Datetime:160",
 			"Customer:Data:200",
-			"Hours:Duration:100",
+			"Hours:Float:100",
 			"Points:Int:70",
 			"Subject:Data:1200",
 		]
@@ -185,7 +186,7 @@ def get_development_data(filters):
 	current_condition = [
 		ISSUE.delivered_for_qa >= from_time,
 		ISSUE.delivered_for_qa <= to_time,
-		ISSUE.workflow_state.isin(['Ready for QA', 'Code Quality Passed', 'Closed'])
+		ISSUE.workflow_state.isin(['Ready for QA', 'Code Quality Passed', 'Closed', 'Completed'])
 	]
 
 	hours_dashboard = Query.from_(TS).join(TSD).on(TS.name == TSD.parent).join(EMP).on(TS.employee == EMP.name).select(
@@ -197,7 +198,7 @@ def get_development_data(filters):
 	)
 
 	hours_report = Query.from_(TS).join(TSD).on(TS.name == TSD.parent).join(EMP).on(TS.employee == EMP.name).select(
-		fn.Sum(TSD.hours * 3600).as_('hours')
+		fn.Sum(TSD.hours).as_('hours')
 	).where(
 		(TSD.parenttype == 'Timesheet')&
 		(TSD.issue == ISSUE.name)&
@@ -230,10 +231,165 @@ def get_development_data(filters):
 			Criterion.all(current_condition)
 		).run(debug=False)
 
-def get_implementarion_columns(filters):
+
+def get_implementation_columns(filters):
 	pass
 
 
-def get_implementarion_data(filters):
+def get_implementation_data(filters):
 	pass
+
+
+def get_timesheet_columns(filters):
+	if filters.get("summary"):
+		if filters.get("group_by") == "Developer":
+			return [
+				"Employee:Data:180",
+				"Hours:Float:100",
+				"Points:Int:100",
+				"Productivity:Data:100",
+			]
+		
+		if filters.get("group_by") == "Issue":
+			return [
+				"Employee:Data:180",
+				"Timesheet:Link/Timesheet:130",
+				"Issue:Link/Issue:130",
+				"Duration:Duration:120",
+				"Hours:Float:100",
+				"Points:Int:100",
+				"Workflow State:Data:175",
+				"Subject:Data:1200",
+			]
+	else:
+		return [
+			"Employee:Data:180",
+			"Timesheet:Link/Timesheet:130",
+			"From Time:Datetime:160",
+			"To Time:Datetime:160",
+			"Duration:Duration:120",
+			"Hours:Float:100",
+			"Issue:Link/Issue:130",
+			"State:Data:175",
+			"Points:Data:70",
+			"Customer:Data:200",
+			"Subject:Data:1200",
+		]
+
+def get_timesheet_data(filters):
+	from_date = filters.get("from_date") or str(week_start())
+	to_date = filters.get("to_date") or str(week_end())
+
+	from_time = from_date + " 00:00:00"
+	to_time = to_date + " 23:59:59"
+
+	current_condition = [
+		TSD.from_time >= from_time,
+		TSD.to_time <= to_time,
+		TS.docstatus == 1
+	]
+	if filters.get("employee"):
+		current_condition.append(TS.employee == filters.get("employee"))
+
+	if filters.get("summary"):
+		query = Query.from_(TS).join(TSD).on(
+			TS.name == TSD.parent
+		).join(ISSUE).on(
+			TSD.issue == ISSUE.name
+		).join(EMP).on(
+			EMP.name == TS.employee
+		).select(
+			EMP.name.as_('employee'),
+			EMP.employee_name,
+			TS.name.as_('timesheet'),
+			ISSUE.name.as_('issue'),
+			ISSUE.workflow_state,
+			ISSUE.subject,
+			ISSUE.estimated_points,
+			fn.Sum(TSD.hours).as_('hours'),
+			fn.Sum(ISSUE.estimated_points * 1).as_('points')
+		).where(
+			Criterion.all(current_condition)
+		)
+		frappe.errprint(query.get_sql().replace('"', '`'))
+		
+		if filters.get("group_by") == "Issue":
+			query = query.groupby(EMP.name, ISSUE.name)
+		
+		if filters.get("group_by") == "Developer":
+			query = query.groupby(EMP.name)
+		
+		data = frappe.qb.from_(query).select('*').run(as_dict=True, debug=True)
+		total_points = sum([flt(row.points) for row in data])
+		result = []
+		for row in data:
+			if filters.get("group_by") == "Developer":
+				productivity  = flt((row.points / total_points) * 100, 2)
+				points = get_total_point_per_employee(row.employee, from_time, to_time)
+				result.append(
+					(
+						row.employee_name,
+						row.hours,
+						points,
+						f"{productivity}%"
+					)
+				)
+			if filters.get("group_by") == "Issue":
+				result.append(
+					(
+						row.employee_name,
+						row.timesheet,
+						row.issue,
+						row.issue,
+						row.hours * 3600,
+						row.hours,
+						row.estimated_points,
+						row.workflow_state,
+						row.subject
+					)
+				)
+		
+		return result			
 	
+	else:
+		return frappe.qb.from_(TS).join(TSD).on(
+			TS.name == TSD.parent
+		).join(ISSUE).on(
+			TSD.issue == ISSUE.name
+		).join(EMP).on(
+			EMP.name == TS.employee
+		).select(
+			EMP.employee_name,
+			TS.name,
+			TSD.from_time,
+			TSD.to_time,
+			TSD.hours * 3600,
+			TSD.hours,
+			ISSUE.name,
+			ISSUE.workflow_state,
+			ISSUE.estimated_points,
+			ISSUE.customer,
+			ISSUE.subject
+		).where(
+			Criterion.all(current_condition)
+		).run(debug=False)
+
+def get_total_point_per_employee(employee, from_time, to_time):
+	tickets = Query.from_(TS).join(TSD).on(
+		TS.name == TSD.parent
+	).select(TSD.issue).where(
+		(Criterion.all([
+			TSD.from_time >= from_time,
+			TSD.to_time <= to_time,
+			TS.employee == employee,
+			TS.docstatus == 1
+		]))
+	).distinct()
+	
+	query = frappe.qb.from_(ISSUE).select(
+		fn.Sum(ISSUE.estimated_points * 1).as_('points')
+	).where(
+		ISSUE.name.isin(tickets)
+	).run(as_dict=True, debug=False)
+
+	return query[0].points or 0

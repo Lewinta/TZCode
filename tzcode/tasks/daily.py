@@ -19,6 +19,8 @@ def execute():
         frappe.log_error(e)
         frappe.db.rollback()
         raise e
+    else:
+        frappe.db.commit()
 
     # I have a feeling that for some reason this should be
     # executed before the create_developer_appraisals method
@@ -30,3 +32,5 @@ def execute():
         frappe.log_error(e)
         frappe.db.rollback()
         raise e
+    else:
+        frappe.db.commit()

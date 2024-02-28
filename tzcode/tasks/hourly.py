@@ -18,6 +18,8 @@ def execute():
         frappe.log_error(e)
         frappe.db.rollback()
         raise e
+    else:
+        frappe.db.commit()
 
     try:
         submit_previous_draft_timesheets()
@@ -25,3 +27,5 @@ def execute():
         frappe.log_error(e)
         frappe.db.rollback()
         raise e
+    else:
+        frappe.db.commit()        

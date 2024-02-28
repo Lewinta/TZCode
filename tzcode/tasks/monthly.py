@@ -3,6 +3,16 @@
 
 # import frappe
 
+# from tzcode.controllers.overrides.doctype.automation import do_something
 
 def execute():
-	pass
+    pass
+
+# try:
+# 	do_something()
+# except Exception as e:
+# 	frappe.log_error(e)
+# 	frappe.db.rollback()
+# 	raise e
+# else:
+# 	frappe.db.commit()

@@ -34,10 +34,26 @@ frappe.query_reports["Tickets By Developer"] = {
 			"fieldname": "type",
 			"label": __("Type"),
 			"fieldtype": "Select",
-			"options": "Historical\nDevelopment\nImplementation",
+			"options": "Historical\nDevelopment\nTimesheet",
 			"reqd": 1,
 			"default": "Historical",
-			"hidden":0
+			"hidden":0,
+			on_change: function() {
+				const type = frappe.query_report.get_filter_value('type') == "Timesheet";
+				// If checked, set
+				frappe.query_report.toggle_filter_display('group_by', !type);
+				frappe.query_report.toggle_filter_display('employee', !!type);
+				frappe.query_report.toggle_filter_display('workflow_state', !!type);
+				frappe.query_report.refresh();
+			}
+		},
+		{
+			"fieldname": "group_by",
+			"label": __("Group By"),
+			"fieldtype": "Select",
+			"options": "Developer\nIssue",
+			"default": "Developer",
+			"hidden": 1,
 		},
 		{
 			"fieldname": "summary",
@@ -46,8 +62,10 @@ frappe.query_reports["Tickets By Developer"] = {
 			"default": 1,
 			on_change: function() {
 				const summary = frappe.query_report.get_filter_value('summary');
+				const type = frappe.query_report.get_filter_value('type');
 				// If checked, set
 				frappe.query_report.toggle_filter_display('developer', !!summary);
+				frappe.query_report.toggle_filter_display('group_by', !summary && type == "Timesheet");
 				frappe.query_report.refresh();
 			}
 		},

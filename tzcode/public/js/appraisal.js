@@ -81,7 +81,7 @@ frappe.ui.form.on("Appraisal", {
                 const args = { "appraisal": frm.doc.name };
                 frappe.call(method, args)
                     .then(({ message: amount }) => {
-                        let dialog = new frappe.ui.Dialog({
+                        const dialog = new frappe.ui.Dialog({
                             title,
                             fields,
                             primary_action_label: __("Create"),
@@ -98,7 +98,8 @@ frappe.ui.form.on("Appraisal", {
                         dialog.set_value("amount", amount);  
                         dialog.show();
                     });
-            })
+            });
+
             btn.addClass("btn-primary");
         }
     }

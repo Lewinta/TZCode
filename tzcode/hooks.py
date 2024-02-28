@@ -292,6 +292,7 @@ override_doctype_class = {
     "Appraisal": "tzcode.controllers.overrides.appraisal.Appraisal",
     "Appraisal Cycle": "tzcode.controllers.overrides.appraisal_cycle.AppraisalCycle",
     "Issue": "tzcode.controllers.overrides.issue.Issue",
+    "Timesheet": "tzcode.controllers.overrides.timesheet.Timesheet",
     "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost",
     "Module Profile": "tzcode.controllers.overrides.module_profile.ModuleProfile",
 }

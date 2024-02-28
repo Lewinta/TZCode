@@ -80,7 +80,6 @@ def get_amount_from_additional_salaries(appraisal):
     variable = get_variable_for_employee(employee_details.employee)
 
     if not variable:
-        print(f"Employee {employee_details.employee} has no variable")
         return 0
 
     avg_total_score = get_avg_total_score_for_employee(
@@ -88,7 +87,6 @@ def get_amount_from_additional_salaries(appraisal):
     )
 
     if not avg_total_score:
-        print(f"Employee {employee_details.employee} has no avg_total_score")
         return 0
 
     return avg_total_score * variable
@@ -115,7 +113,6 @@ def get_avg_total_score_for_employee(employee, period):
     )
 
     if not out:
-        print(f"No appraisal found for employee {employee} in period {period}")
         return 0
 
     return out[0][0]
