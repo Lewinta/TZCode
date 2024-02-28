@@ -35,14 +35,13 @@ class Timesheet(
             if not timesheet_detail.to_time:
                 return # We don't want to submit an incomplete timesheet
 
-
-        if not getattr(self, "internal_submit", False):
-            self.internal_submit = True
-            self.submit()
+        if not self.flags.internal_submit:
+            self.flags.internal_submit = True
+            self.queue_action("submit")
 
             # submitting can cause a validation recursion error
-            # so we need to do something to prevent
-            self.internal_submit = False
+            # so we need to do something to prevent it
+            self.flags.internal_submit = False
         else:
             ...
 

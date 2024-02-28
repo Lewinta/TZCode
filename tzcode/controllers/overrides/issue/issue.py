@@ -423,11 +423,14 @@ class Issue(Document):
 
 
     def get_assignees(self):
-        return set(
-            json.loads(
-                self.get("_assign", default="[]"),
-            ),
-        )
+        try:
+            return set(
+                json.loads(
+                    self.get("_assign", default="[]"),
+                ),
+            )
+        except Exception:
+            return set()
 
 
 @frappe.whitelist()
