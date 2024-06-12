@@ -55,6 +55,7 @@
   {
    "fieldname": "ip",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "IP",
    "no_copy": 1
   },
@@ -130,10 +131,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-03-12 02:52:37.493666",
+ "modified": "2024-04-09 08:55:39.135574",
  "modified_by": "Administrator",
  "module": "TZCode",
  "name": "Cloud Server",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -187,5 +189,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

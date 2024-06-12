@@ -33,11 +33,14 @@
    "in_preview": 0,
    "in_standard_filter": 0,
    "insert_after": "account_head",
+   "is_system_generated": 1,
+   "is_virtual": 0,
    "label": "Tax Type",
    "length": 0,
    "mandatory_depends_on": null,
    "modified": "2018-05-09 22:36:18.843068",
    "modified_by": "Administrator",
+   "module": null,
    "name": "Sales Taxes and Charges-tax_type",
    "no_copy": 0,
    "non_negative": 0,
@@ -56,6 +59,7 @@
    "report_hide": 0,
    "reqd": 1,
    "search_index": 0,
+   "sort_options": 0,
    "translatable": 0,
    "unique": 0,
    "width": null
@@ -63,6 +67,7 @@
  ],
  "custom_perms": [],
  "doctype": "Sales Taxes and Charges",
+ "links": [],
  "property_setters": [],
  "sync_on_migrate": 1
 }

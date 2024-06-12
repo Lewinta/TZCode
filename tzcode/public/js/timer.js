@@ -5,7 +5,7 @@ tzcode.issue.timer = function(row, timestamp=0) {
 		title: __("Timer"),
 		fields:
 		[
-			{"fieldtype": "Link", "label": __("Activity Type"), "fieldname": "activity_type","reqd": 1, "options": "Activity Type"},
+			{"fieldtype": "Link", "label": __("Activity Type"), "fieldname": "activity_type","reqd": 1, "read_only": frappe.session.user==="yefritavarez@tzcode.tech", "options": "Activity Type", "default": "Remote Software Development"},
 			{"fieldtype": "Link", "label": __("Issue"), "fieldname": "issue", "options": "Issue", "hidden": 1},
             {"fieldtype": "Column Break"},
 			{"fieldtype": "Float", "label": __("Expected Hrs"), "fieldname": "expected_hours"},            

@@ -39,7 +39,7 @@ frappe.ui.form.on("Payroll Entry", {
         })
     },
     update_salary_slips(frm){
-        if(!!frm.doc.salary_slips_submitted)
+        if(!!frm.doc.salary_slips_submitted || frm.is_new() || frm.doc.docstatus != 1) 
             return 
         frm.add_custom_button("Update Slips", () => {
             let freeze_message = `

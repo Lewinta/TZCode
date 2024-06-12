@@ -11,8 +11,19 @@ from tzcode.controllers.overrides.timesheet.automation import (
     submit_draft_timesheets,
 )
 
+from tzcode.utils.utils import get_exchange_rates
+
 
 def execute():
+    try:
+        get_exchange_rates()
+    except Exception as e:
+        frappe.log_error(e)
+        frappe.db.rollback()
+        raise e
+    else:
+        frappe.db.commit()
+
     try:
         create_developer_appraisals()
     except Exception as e:

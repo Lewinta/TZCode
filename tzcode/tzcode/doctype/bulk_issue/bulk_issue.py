@@ -17,22 +17,6 @@ from . import locker
 class BulkIssue(Document):
     def after_insert(self):
         self.hsh = frappe.generate_hash()
-        # doctype = self.doctype
-        # name = self.name
-        # method = "create_issue"
-        # queue = "default"
-        # timeout = 300
-        # now = False
-
-        # enqueue_doc(
-        #     doctype,
-        #     name,
-        #     method,
-        #     queue,
-        #     timeout,
-        #     now,
-        #     # after_commit=True,
-        # )
 
         # frappe.msgprint("Bulk Issue created")
         if locker.is_locked():
@@ -55,6 +39,7 @@ class BulkIssue(Document):
         queue = 'default'
         timeout = 300
         now = False
+        job_id = f"{doctype}-{name} update_issue"
 
         enqueue_doc(
             doctype=doctype,
@@ -64,6 +49,7 @@ class BulkIssue(Document):
             timeout=timeout,
             now=now,
             enqueue_after_commit=True,
+            job_id=job_id,
         )
 
         frappe.msgprint("Bulk Issue updated")
@@ -104,6 +90,7 @@ class BulkIssue(Document):
 
         doc.flags.ignore_permissions = True
         doc.flags.ignore_mandatory = True
+        doc.flags.dont_notify_client = True
 
         try:
             doc.db_insert()
@@ -121,11 +108,11 @@ class BulkIssue(Document):
 
             # todo: trigger method to send email to admin
 
-        publish_realtime(
-            "version_update",
-            message="Issue created",
-            user=frappe.session.user
-        )
+        # publish_realtime(
+        #     "version_update",
+        #     message="Issue created",
+        #     user=frappe.session.user
+        # )
 
         locker.release_lock(self.hsh)
 
@@ -169,11 +156,11 @@ class BulkIssue(Document):
             if auto_commit:
                 frappe.db.commit()
 
-            publish_realtime(
-                "version_update",
-                message="Issue updated",
-                user=frappe.session.user
-            )
+            # publish_realtime(
+            #     "version_update",
+            #     message="Issue updated",
+            #     user=frappe.session.user
+            # )
 
     subject = None
     status = None
@@ -182,3 +169,4 @@ class BulkIssue(Document):
     remote_reference = None
     priority = None
     description = None
+    hsh = None

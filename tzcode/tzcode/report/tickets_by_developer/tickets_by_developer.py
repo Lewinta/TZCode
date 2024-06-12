@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 from frappe.query_builder import CustomFunction, Criterion, Case, Query, functions as fn
 from frappe.query_builder.custom import ConstantColumn
@@ -64,8 +65,7 @@ def get_historical_data(filters):
 	workflow_state = filters.get("workflow_state")
 	employee = filters.get("employee")
 	current_condition = [
-		ISSUE.creation >= from_time,
-		ISSUE.creation <= to_time
+		ISSUE.creation >= from_time, ISSUE.creation <= to_time
 	]
 	current_closed_condition = [
 		ISSUE.delivered_for_qa >= from_time,
@@ -114,7 +114,7 @@ def get_historical_data(filters):
 			fn.Sum(Case().when(~ISSUE.status.isin(['Resolved', 'Closed']), 1).else_(0)).as_('open_and_held_issues'),
 			fn.Sum(Case().when(Criterion.all(current_delivered), 1).else_(0)).as_('current_delivered'),
 			fn.Sum(Case().when(Criterion.all(current_closed_condition), 1).else_(0)).as_('closed_issues'),
-		).run(debug=False)
+		).run(debug=True)
 	else:
 		fields = [
 			ISSUE.name,
@@ -142,7 +142,7 @@ def get_historical_data(filters):
 		current_issues =  Query.from_(ISSUE).select(*fields).where( Criterion.all(current_condition) )
 		current_closed =  Query.from_(ISSUE).select(*fields).where( Criterion.all(current_closed_condition) )
 	
-		return frappe.qb.from_(all_open + current_issues + current_closed).select('*').run(debug=False)
+		return frappe.qb.from_(all_open + current_issues + current_closed).select('*').run(debug=True)
 		
 
 def get_development_columns(filters):
@@ -215,7 +215,7 @@ def get_development_data(filters):
 			fn.Sum(ISSUE.estimated_points * 1)
 		).where(
 			Criterion.all(current_condition)
-		).groupby(ISSUE.resolver).run(debug=False)
+		).groupby(ISSUE.resolver).run(debug=True)
 	else:
 		return frappe.qb.from_(ISSUE).select(
 			resolver,
@@ -229,7 +229,7 @@ def get_development_data(filters):
 			ISSUE.subject
 		).where(
 			Criterion.all(current_condition)
-		).run(debug=False)
+		).run(debug=True)
 
 
 def get_implementation_columns(filters):
@@ -245,9 +245,8 @@ def get_timesheet_columns(filters):
 		if filters.get("group_by") == "Developer":
 			return [
 				"Employee:Data:180",
+				"Date:Date:100",
 				"Hours:Float:100",
-				"Points:Int:100",
-				"Productivity:Data:100",
 			]
 		
 		if filters.get("group_by") == "Issue":
@@ -255,6 +254,7 @@ def get_timesheet_columns(filters):
 				"Employee:Data:180",
 				"Timesheet:Link/Timesheet:130",
 				"Issue:Link/Issue:130",
+				"Customer:Data:220",
 				"Duration:Duration:120",
 				"Hours:Float:100",
 				"Points:Int:100",
@@ -264,29 +264,21 @@ def get_timesheet_columns(filters):
 	else:
 		return [
 			"Employee:Data:180",
-			"Timesheet:Link/Timesheet:130",
-			"From Time:Datetime:160",
-			"To Time:Datetime:160",
-			"Duration:Duration:120",
+			"Date:Data:160",
 			"Hours:Float:100",
-			"Issue:Link/Issue:130",
-			"State:Data:175",
-			"Points:Data:70",
-			"Customer:Data:200",
-			"Subject:Data:1200",
 		]
 
 def get_timesheet_data(filters):
 	from_date = filters.get("from_date") or str(week_start())
 	to_date = filters.get("to_date") or str(week_end())
-
+	
 	from_time = from_date + " 00:00:00"
 	to_time = to_date + " 23:59:59"
 
 	current_condition = [
-		TSD.from_time >= from_time,
-		TSD.to_time <= to_time,
-		TS.docstatus == 1
+		TS.start_date >= from_date,
+		TS.end_date <= to_date,
+		TS.docstatus >= 0
 	]
 	if filters.get("employee"):
 		current_condition.append(TS.employee == filters.get("employee"))
@@ -302,6 +294,7 @@ def get_timesheet_data(filters):
 			EMP.name.as_('employee'),
 			EMP.employee_name,
 			TS.name.as_('timesheet'),
+			ISSUE.customer,
 			ISSUE.name.as_('issue'),
 			ISSUE.workflow_state,
 			ISSUE.subject,
@@ -311,68 +304,82 @@ def get_timesheet_data(filters):
 		).where(
 			Criterion.all(current_condition)
 		)
-		frappe.errprint(query.get_sql().replace('"', '`'))
 		
 		if filters.get("group_by") == "Issue":
 			query = query.groupby(EMP.name, ISSUE.name)
+
+			data = frappe.qb.from_(query).select('*').run(as_dict=True, debug=True)
+			total_points = sum([flt(row.points) for row in data])
+			result = []
+			for row in data:
+				if filters.get("group_by") == "Developer":
+					productivity  = flt((row.points / total_points) * 100, 2)
+					points = get_total_point_per_employee(row.employee, from_time, to_time)
+					result.append(
+						(
+							row.employee_name,
+							row.hours,
+							points,
+							f"{productivity}%"
+						)
+					)
+				if filters.get("group_by") == "Issue":
+					result.append(
+						(
+							row.employee_name,
+							row.timesheet,
+							row.issue,
+							row.customer,
+							row.hours * 3600,
+							row.hours,
+							row.estimated_points,
+							row.workflow_state,
+							row.subject
+						)
+					)
 		
+			return result			
 		if filters.get("group_by") == "Developer":
-			query = query.groupby(EMP.name)
-		
-		data = frappe.qb.from_(query).select('*').run(as_dict=True, debug=True)
-		total_points = sum([flt(row.points) for row in data])
-		result = []
-		for row in data:
-			if filters.get("group_by") == "Developer":
-				productivity  = flt((row.points / total_points) * 100, 2)
-				points = get_total_point_per_employee(row.employee, from_time, to_time)
-				result.append(
-					(
-						row.employee_name,
-						row.hours,
-						points,
-						f"{productivity}%"
-					)
-				)
-			if filters.get("group_by") == "Issue":
-				result.append(
-					(
-						row.employee_name,
-						row.timesheet,
-						row.issue,
-						row.issue,
-						row.hours * 3600,
-						row.hours,
-						row.estimated_points,
-						row.workflow_state,
-						row.subject
-					)
-				)
-		
-		return result			
+			return frappe.qb.from_(TS).join(EMP).on(
+				EMP.name == TS.employee
+			).select(
+				EMP.employee_name,
+				TS.start_date,
+				fn.Sum(TS.total_hours),
+			).where(
+				Criterion.all(current_condition)
+			).groupby(TS.employee).run(debug=True)
 	
 	else:
-		return frappe.qb.from_(TS).join(TSD).on(
-			TS.name == TSD.parent
-		).join(ISSUE).on(
-			TSD.issue == ISSUE.name
-		).join(EMP).on(
+		data =  frappe.qb.from_(TS).join(EMP).on(
 			EMP.name == TS.employee
 		).select(
 			EMP.employee_name,
-			TS.name,
-			TSD.from_time,
-			TSD.to_time,
-			TSD.hours * 3600,
-			TSD.hours,
-			ISSUE.name,
-			ISSUE.workflow_state,
-			ISSUE.estimated_points,
-			ISSUE.customer,
-			ISSUE.subject
+			TS.start_date,
+			fn.Sum(TS.total_hours).as_('total_hours')	
 		).where(
 			Criterion.all(current_condition)
-		).run(debug=False)
+		).groupby(TS.employee, TS.start_date).run(as_dict=True, debug=True)
+
+		result = []
+		weekdays = {
+			0: "Monday",
+			1: "Tuesday",
+			2: "Wednesday",
+			3: "Thursday",
+			4: "Friday",
+			5: "Saturday",
+			6: "Sunday",
+		}
+		for row in data:
+			result.append(
+				(
+					row.employee_name,
+					f"{_(weekdays[row.start_date.weekday()])} {row.start_date.day}th {row.start_date.year}",
+					row.total_hours
+				)
+			)
+		return result
 
 def get_total_point_per_employee(employee, from_time, to_time):
 	tickets = Query.from_(TS).join(TSD).on(
@@ -390,6 +397,6 @@ def get_total_point_per_employee(employee, from_time, to_time):
 		fn.Sum(ISSUE.estimated_points * 1).as_('points')
 	).where(
 		ISSUE.name.isin(tickets)
-	).run(as_dict=True, debug=False)
+	).run(as_dict=True, debug=True)
 
 	return query[0].points or 0

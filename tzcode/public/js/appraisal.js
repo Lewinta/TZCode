@@ -7,8 +7,8 @@ frappe.ui.form.on("Appraisal", {
         //     return;
         
         // Los incentivos se pagaran el dia 15 del mes siguiente
-        const next_month = frappe.datetime.add_months(frm.doc.start_date, 1);
-        const payroll_date = frappe.datetime.add_days(next_month, 14);
+        const current_month = frappe.datetime.month_start();
+        const payroll_date = frappe.datetime.add_days(current_month, 14);
         const title = __("Create Additional Salary");
         const fields = [
             {

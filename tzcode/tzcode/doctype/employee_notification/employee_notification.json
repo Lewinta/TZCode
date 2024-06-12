@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-05-22 08:41:15.938736",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "employee_user",
+  "title",
+  "column_break_ddkrk",
+  "date",
+  "section_break_phnyq",
+  "notification_template",
+  "requires_acknowledgment",
+  "re_render_template",
+  "section_break_m1ldu",
+  "content",
+  "acknowledgments_section",
+  "employees_acknowledgment"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "notification_template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Notification Template",
+   "options": "Employee Notification Template",
+   "read_only_depends_on": "eval:!doc.__islocal",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "notification_template.template",
+   "fetch_if_empty": 1,
+   "fieldname": "content",
+   "fieldtype": "Text Editor",
+   "label": "Body"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "column_break_ddkrk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_phnyq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.notification_template&&doc.content",
+   "fieldname": "re_render_template",
+   "fieldtype": "Button",
+   "label": "Re - Render Template"
+  },
+  {
+   "fieldname": "section_break_m1ldu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fetch_from": "notification_template.requires_acknowledgment",
+   "fieldname": "requires_acknowledgment",
+   "fieldtype": "Check",
+   "label": "Requires Acknowledgment"
+  },
+  {
+   "fieldname": "acknowledgments_section",
+   "fieldtype": "Section Break",
+   "label": "Acknowledgments"
+  },
+  {
+   "default": "0",
+   "description": "<p><strong>EN</strong> -&gt; I acknowledge receipt of this warning and understand the expectations for improvement.\n</p>\n<p><strong>ES</strong> -&gt; Reconozco haber recibido esta advertencia y entiendo las expectativas para mejorar.\n</p>",
+   "fieldname": "employees_acknowledgment",
+   "fieldtype": "Check",
+   "label": "Employee's Acknowledgment / Reconocimiento del Empleado"
+  },
+  {
+   "fetch_from": "employee.user_id",
+   "fieldname": "employee_user",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Employee User",
+   "options": "User"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-05-22 12:34:02.166227",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Employee Notification",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1,
+ "track_views": 1
+}

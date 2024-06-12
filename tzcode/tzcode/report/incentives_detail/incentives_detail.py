@@ -15,7 +15,7 @@ def get_columns(filters):
 			"label": "Appraisal",
 			"fieldtype": "Link",
 			"options": "Appraisal",
-			"width": 160
+			"width": 170
 		},
 		{
 			"fieldname": "start_date",

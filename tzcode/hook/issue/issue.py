@@ -120,6 +120,9 @@ def _close_issue(doc):
     if not doc.customer:
         return
 
+    if doc.flags and doc.flags.dont_notify_client:
+        return
+
     remote_method = "/api/resource/Issue/{}".format(doc.remote_reference)
     customer = frappe.get_doc("Customer", doc.customer)
     if not customer.api_key or not customer.api_secret:

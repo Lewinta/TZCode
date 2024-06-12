@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "creation": "2024-05-30 18:41:09.704578",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "disable_validation_for_issue_states",
+  "allow_timesheets_against_states",
+  "dev_employees"
+ ],
+ "fields": [
+  {
+   "fieldname": "allow_timesheets_against_states",
+   "fieldtype": "Table MultiSelect",
+   "label": "Allow Timesheets against States",
+   "options": "Issue States"
+  },
+  {
+   "default": "0",
+   "description": "Will disable validations for \"Allow Timesheets against States\"",
+   "fieldname": "disable_validation_for_issue_states",
+   "fieldtype": "Check",
+   "label": "Disable Validation for Issue States"
+  },
+  {
+   "fieldname": "dev_employees",
+   "fieldtype": "Table",
+   "label": "Dev Employees",
+   "options": "Dev Employees"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-06-05 19:06:49.239679",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Tz Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

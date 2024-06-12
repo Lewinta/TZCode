@@ -44,6 +44,7 @@ doctype_js = {
     "Task": "public/js/task.js",
     "Appraisal": "public/js/appraisal.js",
     "Supplier": "public/js/supplier.js",
+    "Timesheet": "public/js/timesheet.js",
     "Module Profile": "public/js/module_profile.js",
     "Payment Entry": "public/js/payment_entry.js",
 }
@@ -56,7 +57,8 @@ doctype_list_js = {
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
-app_logo_url = "/assets/tzcode/images/blue_logo.svg"
+# app_logo_url = "/assets/tzcode/images/blue_logo.svg"
+app_logo_url = "/assets/tzcode/images/TZCode Full Logo.png"
 
 website_context = {
     "favicon": 	"/assets/tzcode/images/favicon.png",
@@ -199,8 +201,15 @@ has_permission = {
 }
 
 
+# Standard Queries
+# ----------------
+standard_queries = {
+    "Employee": "tzcode.controllers.overrides.employee.get_employee_list",
+}
+
+
 # Jinja
-# ---------------
+# -----
 
 jenv = {
     "methods": ["get_employee_salary:tzcode.jinja.methods.get_employee_salary"]
@@ -225,12 +234,16 @@ doc_events = {
     "Sales Order": {
         "validate": "tzcode.hook.sales_order.validate",
     },
+    "Payment Entry": {
+        "on_update": "tzcode.hook.payment_entry.on_update",
+    },
     "Purchase Invoice": {
         "validate": "tzcode.hook.purchase_invoice.validate",
         "on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
         "on_trash": "tzcode.hook.purchase_invoice.on_trash",
     },
     "Journal Entry": {
+        "on_update": "tzcode.hook.journal_entry.on_update",
         "on_cancel": "tzcode.hook.journal_entry.on_cancel",
         "on_trash": "tzcode.hook.journal_entry.on_trash",
     },
@@ -248,6 +261,9 @@ doc_events = {
         "validate": "tzcode.hook.todo.validate",
         "after_insert": "tzcode.hook.todo.after_insert",
     },
+    "Currency Exchange Settings": {
+        "validate": "tzcode.hook.currency_exchange_settings.validate",
+    }
 }
 
 # Scheduled Tasks

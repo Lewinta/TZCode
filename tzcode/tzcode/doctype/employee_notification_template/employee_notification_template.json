@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:template_name",
+ "creation": "2024-05-22 07:20:02.036596",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "notification_type",
+  "requires_acknowledgment",
+  "template_details_section",
+  "template",
+  "quick_help"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "template_details_section",
+   "fieldtype": "Section Break",
+   "label": "Template Details"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Text Editor",
+   "in_list_view": 1,
+   "label": "Template Body",
+   "reqd": 1
+  },
+  {
+   "fieldname": "notification_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Notification Type",
+   "options": "Employee Notification Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "quick_help",
+   "fieldtype": "HTML",
+   "options": "<div class=\"ql-editor read-mode\"><h2><strong style=\"\">Available objects are:</strong></h2><p class=\"ql-indent-1\"><br></p><p class=\"ql-indent-1\"><strong style=\"font-size: 13px; color: rgb(51, 60, 68);\">notification (EmployeeNotification)</strong></p><p class=\"ql-indent-1\"><span style=\"font-size: 13px; color: rgb(51, 60, 68);\">Usage:</span></p><pre class=\"ql-code-block-container\" spellcheck=\"false\"><div class=\"ql-code-block\">{{ notification.date }}</div></pre><p class=\"ql-indent-1\"><br></p><p class=\"ql-indent-1\"><strong style=\"font-size: 13px; color: rgb(51, 60, 68);\">template (EmployeeNotificationTemplate)</strong></p><p class=\"ql-indent-1\"><span style=\"font-size: 13px; color: rgb(51, 60, 68);\">Usage:</span></p><pre class=\"ql-code-block-container\" spellcheck=\"false\"><div class=\"ql-code-block\">{{ template.notification_type }}</div></pre><p class=\"ql-indent-1\"><br></p><p class=\"ql-indent-1\"><strong style=\"font-size: 13px; color: rgb(51, 60, 68);\">employee (Employee)</strong></p><p class=\"ql-indent-1\"><span style=\"font-size: 13px; color: rgb(51, 60, 68);\">Usage:</span></p><pre class=\"ql-code-block-container\" spellcheck=\"false\"><div class=\"ql-code-block\" data-language=\"plain\">{{ notification.employee_name }}</div></pre><p><br></p><pre class=\"ql-code-block-container\" spellcheck=\"false\"><div class=\"ql-code-block\">{{ notification.date_of_joining }}</div></pre><p class=\"ql-indent-1\"><strong style=\"font-size: 13px; color: rgb(51, 60, 68);\">owner (User)</strong></p><p class=\"ql-indent-1\"><span style=\"font-size: 13px; color: rgb(51, 60, 68);\">Usage:</span></p><pre class=\"ql-code-block-container\" spellcheck=\"false\"><div class=\"ql-code-block\">{{ notification.full_name }}</div></pre><p><br></p></div>"
+  },
+  {
+   "default": "0",
+   "description": "You can override this one.",
+   "fieldname": "requires_acknowledgment",
+   "fieldtype": "Check",
+   "label": "Requires Acknowledgment"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "group": "Notifications",
+   "link_doctype": "Employee Notification",
+   "link_fieldname": "notification_template"
+  }
+ ],
+ "modified": "2024-05-22 11:56:30.069865",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Employee Notification Template",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

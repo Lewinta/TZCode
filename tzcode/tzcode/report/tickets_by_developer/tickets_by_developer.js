@@ -19,16 +19,11 @@ frappe.query_reports["Tickets By Developer"] = {
 			"default": frappe.datetime.week_end()
 		},
 		{
-			"fieldname": "employee",
-			"label": __("Employee"),
-			"fieldtype": "Link",
-			"options": "User",
-		},
-		{
 			"fieldname": "workflow_state",
 			"label": __("Workflow State"),
 			"fieldtype": "Link",
 			"options": "Workflow State",
+			"hidden": 1,
 		},
 		{
 			"fieldname": "type",
@@ -42,8 +37,7 @@ frappe.query_reports["Tickets By Developer"] = {
 				const type = frappe.query_report.get_filter_value('type') == "Timesheet";
 				// If checked, set
 				frappe.query_report.toggle_filter_display('group_by', !type);
-				frappe.query_report.toggle_filter_display('employee', !!type);
-				frappe.query_report.toggle_filter_display('workflow_state', !!type);
+				// frappe.query_report.toggle_filter_display('workflow_state', !!type);
 				frappe.query_report.refresh();
 			}
 		},
@@ -64,8 +58,7 @@ frappe.query_reports["Tickets By Developer"] = {
 				const summary = frappe.query_report.get_filter_value('summary');
 				const type = frappe.query_report.get_filter_value('type');
 				// If checked, set
-				frappe.query_report.toggle_filter_display('developer', !!summary);
-				frappe.query_report.toggle_filter_display('group_by', !summary && type == "Timesheet");
+				frappe.query_report.toggle_filter_display('group_by', type != "Timesheet");
 				frappe.query_report.refresh();
 			}
 		},

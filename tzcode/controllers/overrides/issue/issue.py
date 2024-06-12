@@ -6,13 +6,21 @@ import frappe
 
 from frappe.model.document import Document
 from frappe.desk.form.assign_to import add as do_assignation
-from frappe.utils import now_datetime, nowdate
+from frappe.utils import now_datetime, nowdate, cint
 from datetime import datetime
 from .discord import trigger_discord_notifications
 from frappe.query_builder import functions as fn
 
 
 class Issue(Document):
+    @property
+    def estimated_points_display(self):
+        return self.estimated_points if self.estimated_points else ""
+
+    def before_save(self):
+        # self.estimated_points_display = ""
+        ...
+
     def onload(self):
         self.set_onload()
 
@@ -22,6 +30,44 @@ class Issue(Document):
             "duplicates",
             self.get_duplicates(),
         )
+        parent.set_onload(
+            "relates_to_details",
+            self.get_relates_to_details(),
+        )
+
+        timers = self.get_timers(self.name, frappe.session.user),
+        # timers = {
+        #     "sessions": cint(result.sessions),
+        #     "employees": result.employees.split(",") if result.employees else [],
+        #     "timesheets": result.timesheets.split(",") if result.timesheets else [],
+        #     "total_seconds": cint(result.total_seconds),
+        # }
+
+        timers[0]["details"] = dict()
+        for employee in timers[0]["employees"]:
+            details = timers[0]["details"]
+
+            fullname, sessions, seconds = self.get_sessions_and_seconds(employee, self.name)
+            details.setdefault(employee, {
+                "full_name": fullname,
+                "sessions": sessions,
+                "seconds": seconds,
+            })
+
+        oldest_log, newest_log = self.get_oldest_and_newest_logs(self.name)
+
+        timers[0]["oldest_log"] = oldest_log
+        timers[0]["newest_log"] = newest_log
+
+        parent.set_onload(
+            "timers", timers
+        )
+
+    # we need to know the following:
+    # how many developers have been working on the ticket
+    # the hours each developer has been working on the ticket
+    # and how many sessions each developer has been working on the ticket
+    # I'd like to know when first it was started and when it was last worked on (if it's still ongoing it should show the current time)
 
     # def after_insert(self):
     #     trigger_discord_notifications({
@@ -31,6 +77,7 @@ class Issue(Document):
 
     def validate(self):
         self.auto_set_resolver_if_not_set()
+        self.update_assignation_date_if_applies()
         if not self.is_new():
             trigger_discord_notifications({"doc": self})
         
@@ -43,6 +90,104 @@ class Issue(Document):
         self.assign_to_approver_if_not_assigned()
         self.close_timesheet_if_open()
         self.check_for_existing_timer()
+
+    @staticmethod
+    def get_sessions_and_seconds(employee, issue):
+        [result] = frappe.db.sql(f"""
+            Select
+                employee_name As full_name,
+                Count(1) As sessions,
+                Sum(seconds) As total_seconds
+            From (
+                Select
+                    employee.employee_name As employee_name,
+                    detail.from_time,
+                    detail.to_time,
+                    TimestampDiff(
+                        SECOND, detail.from_time, IfNull(
+                           detail.to_time, {frappe.utils.now()!r}
+                        )
+                    ) As seconds
+                From
+                    `tabTimesheet` As timesheet
+                Inner Join
+                    `tabTimesheet Detail` As detail
+                    On detail.parent = timesheet.name
+                    And detail.parenttype = "Timesheet"
+                    And detail.parentfield = "time_logs"
+                Inner Join
+                    `tabEmployee` As employee
+                    On timesheet.employee = employee.name
+                Where
+                    detail.issue = {issue!r}
+                    And timesheet.docstatus != 2
+                    And employee.name = {employee!r}
+            ) As temp
+        """, as_dict=True)
+
+        return result.full_name, cint(result.sessions), cint(result.total_seconds)
+
+    def get_oldest_and_newest_logs(self, issue, user=None):
+        # {frappe.utils.now()!r}
+        [row] = frappe.db.sql(f"""
+            Select
+                Min(from_time) As oldest_log,
+                Max(IfNull(to_time, "Now")) As newest_log
+            From
+                `tabTimesheet Detail`
+            Where
+                issue = {issue!r}
+                And docstatus != 2
+        """)
+
+        return row
+
+    def get_timers(self, issue, user):
+        [result] = frappe.db.sql(f"""
+            Select
+                Count(1) As sessions,
+                Group_Concat(Distinct employee) As employees,
+                Group_Concat(Distinct user) As users,
+                Group_Concat(Distinct parent) As timesheets,
+                Sum(seconds) As total_seconds
+            From (
+                Select
+                    timesheet.name As parent,
+                    employee.name As employee,
+                    employee.user_id As user,
+                    detail.from_time,
+                    detail.to_time,
+                    TimestampDiff(
+                        SECOND, detail.from_time, IfNull(
+                           detail.to_time, {frappe.utils.now()!r}
+                        )
+                    ) As seconds
+                From
+                    `tabTimesheet` As timesheet
+                Inner Join
+                    `tabTimesheet Detail` As detail
+                    On detail.parent = timesheet.name
+                    And detail.parenttype = "Timesheet"
+                    And detail.parentfield = "time_logs"
+                Inner Join
+                    `tabEmployee` As employee
+                    On timesheet.employee = employee.name
+                Where
+                    detail.issue = {issue!r}
+                    And timesheet.docstatus != 2
+            ) As temp
+        """, as_dict=True)
+
+        return {
+            "sessions": cint(result.sessions),
+            "employees": result.employees.split(",") if result.employees else [],
+            "users": result.users.split(",") if result.users else [],
+            "timesheets": result.timesheets.split(",") if result.timesheets else [],
+            "total_seconds": cint(result.total_seconds),
+        }
+
+
+
 
     def get_duplicates(self):
         # based off the customer and remote_reference
@@ -63,6 +208,26 @@ class Issue(Document):
             fields=["name", "subject", "status"],
         )
 
+    def get_relates_to_details(self):
+        if not self.relates_to:
+            return {}
+
+        doctype = self.doctype
+        filters = {
+            "name": self.relates_to,
+            "issue_type": "Epic",
+        }
+
+        fields = [
+            "subject",
+            "issue_type",
+            "resolver",
+            "estimated_points",
+            "workflow_state",
+        ]
+
+        return frappe.get_value(doctype, filters, fields, as_dict=True)
+
     def auto_set_resolver_if_not_set(self):
         if self.is_new():
             return # don't do anything if this is a new record
@@ -77,6 +242,25 @@ class Issue(Document):
         if self.workflow_state == "Working" \
             and db_doc.workflow_state != self.workflow_state:
             self.resolver = frappe.session.user
+
+    def update_assignation_date_if_applies(self):
+        if self.is_new():
+            return # don't do anything if this is a new record
+
+        if not self.resolver:
+            self.assignation_date = None
+            return
+
+        if not self.assignation_date:
+            self.assignation_date = frappe.utils.now_datetime()
+            return
+
+        db_doc = self.get_doc_before_save()
+        if not db_doc:
+            return
+
+        if self.resolver != db_doc.resolver:
+            self.assignation_date = frappe.utils.now_datetime()
 
     def update_delivered_for_qa_if_reqd(self):
         # expected_state is the value that we are looking for
@@ -269,7 +453,8 @@ class Issue(Document):
         This will be true as long as the new state is "Ready for QA"
         """
 
-        if self.has_state_changed_to("Ready for QA"):
+        if self.has_state_changed_to("Ready for QA") \
+            or self.has_state_changed_to("Completed"):
             # get any open timer for this issue
             doctype = "Timesheet"
             for detail, name in self.get_open_timelogs(
@@ -290,6 +475,7 @@ class Issue(Document):
 
                     break # look no further
 
+                doc.flags.ignore_permissions = True
                 doc.save()
 
                 frappe.msgprint(
@@ -519,6 +705,8 @@ def create_timelogs(activity_type, expected_hours, issue):
         "issue": issue,
         "is_billable": 0
     })
+
+    ts.flags.ignore_permissions = True
     ts.save()
 
 
@@ -533,6 +721,8 @@ def complete_timelogs(timesheet, log_name):
         "completed": 1,
         "hours": (to_time - from_time).total_seconds() / 3600
     })
+
+    doc.flags.ignore_permissions = True
     doc.save()
     
 
