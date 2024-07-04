@@ -17,7 +17,7 @@ def get_columns():
 		_("Customer") 			+ ":Data:150",
 		_("NCF") 				+ ":Data:110",
 		_("Reference") 			+ ":Data:180",
-		_("Neto")		 		+ ":Currency/currency:100",
+		_("Net")		 		+ ":Currency/currency:100",
 		# _("Dias")	 			+ ":Data:60",
 		# _("%")	 				+ ":Data:60",
 		# _("Descuento")	 		+ ":Currency/currency:90",

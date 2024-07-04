@@ -64,7 +64,8 @@ class Timesheet(
 
             issue_state = get_issue_state(timesheet_detail.issue)
 
-            if issue_state not in self.get_valid_issue_states():
+            if issue_state not in self.get_valid_issue_states() \
+                and "Support Manager" not in frappe.get_roles():
                 frappe.throw(
                     f"""
                         The Issue {timesheet_detail.issue} is in a state that doesn't allow you to log time against it.
@@ -77,7 +78,8 @@ class Timesheet(
                     if time_log.issue:
                         issue_state = get_issue_state(time_log.issue)
 
-                        if issue_state not in self.get_valid_issue_states():
+                        if issue_state not in self.get_valid_issue_states() \
+                            and "Support Manager" not in frappe.get_roles():
                             frappe.throw(
                                 f"""
                                     The Issue {time_log.issue} is in a state that doesn't allow you to log time against it.

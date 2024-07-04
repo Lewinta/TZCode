@@ -15,9 +15,11 @@
 				"Help Provided",
 				"On Hold",
 				"Ready for QA",
+				"Testing",
 				"Ready for Development",
 				"Code Quality Passed",
 				"Viewed But Yikes",
+				"No code to Review",
 				"Code Quality Rejected",
 				"Awaiting Customer",
 				"Acceptance Criteria Met",
@@ -198,8 +200,10 @@
 				"Help Provided",
 				"On Hold",
 				"Ready for QA",
+				"Testing",
 				"Code Quality Passed",
 				"Viewed But Yikes",
+				"No code to Review",
 				"Code Quality Rejected",
 				"Awaiting Customer",
 				"Acceptance Criteria Met",
@@ -287,9 +291,11 @@
 			"Help Requested": is_delayed ? "red": "yellow",
 			"Help Provided": is_delayed ? "red": "yellow",
 			"Ready for QA": is_delayed ? "red": "purple",
+			"Testing": is_delayed ? "blue": "blue",
 			"On Hold": "grey",
 			"Code Quality Passed": "cyan",
-			"Viewed But Yikes": "blue",
+			"Viewed But Yikes": "orange",
+			"No code to Review": "blue",
 			"Acceptance Criteria Met": "green",
 			"Code Quality Rejected": is_delayed ? "red": "orange",
 			"Acceptance Criteria not Met": is_delayed ? "red": "orange",
@@ -327,6 +333,8 @@
 			_state = " 🤗 Code Quality Passed"
 		} else if (doc.workflow_state === "Viewed But Yikes") {
 			_state = "🤷‍♂️ Viewed But Yikes"
+		} else if (doc.workflow_state === "No code to Review") {
+			_state = "🍨 No code to Review"
 		} else if (doc.workflow_state === "Acceptance Criteria Met") {
 			_state = "👍 Acceptance Criteria Met"
 		} else if (doc.workflow_state === "Code Quality Rejected") {
@@ -337,6 +345,8 @@
 			_state = "🕢 Awaiting Customer"
 		} else if (doc.workflow_state === "Ready for QA") {
 			_state = "🎉 Ready for QA"
+		} else if (doc.workflow_state === "Testing") {
+			_state = "🛂 Testing"
 		} else if (doc.workflow_state === "Ready for Development") {
 			_state = "✨ Ready for Development"
 		} else if (doc.workflow_state === "On Hold") {
@@ -457,15 +467,15 @@
 					)
 			) || (
 				frappe.session.user === "yefritavarez@tzcode.tech"
-					&& ["Code Quality Passed", "Viewed But Yikes"].includes(doc.workflow_state)
+					&& ["Code Quality Passed", "Viewed But Yikes", "No code to Review"].includes(doc.workflow_state)
 					&& !doc.approver
 			) || (
 				frappe.session.user === "brenorramirez@tzcode.tech"
-					&& ["Code Quality Passed", "Viewed But Yikes"].includes(doc.workflow_state)
+					&& ["Code Quality Passed", "Viewed But Yikes", "No code to Review"].includes(doc.workflow_state)
 					&& doc.approver === frappe.session.user
 			) || (
 				frappe.session.user === "lewinvillar@tzcode.tech"
-					&& ["Code Quality Passed", "Viewed But Yikes"].includes(doc.workflow_state)
+					&& ["Code Quality Passed", "Viewed But Yikes", "No code to Review"].includes(doc.workflow_state)
 					&& doc.approver === frappe.session.user
 			) || (
 				["miguel.higuera@tzcode.tech", "rainierpolanco@tzcode.tech", "reyferreras@tzcode.tech", "brenorramirez@tzcode.tech", "lewinvillar@tzcode.tech", "yefritavarez@tzcode.tech"].includes(frappe.session.user)

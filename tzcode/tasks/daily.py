@@ -11,6 +11,10 @@ from tzcode.controllers.overrides.timesheet.automation import (
     submit_draft_timesheets,
 )
 
+from tzcode.controllers.overrides.issue.automation import (
+    mark_issue_as_seen_in_meeting,
+)
+
 from tzcode.utils.utils import get_exchange_rates
 
 
@@ -39,6 +43,16 @@ def execute():
     # create_developer_appraisals method.
     try:
         submit_draft_timesheets()
+    except Exception as e:
+        frappe.log_error(e)
+        frappe.db.rollback()
+        raise e
+    else:
+        frappe.db.commit()
+
+
+    try:
+        mark_issue_as_seen_in_meeting()
     except Exception as e:
         frappe.log_error(e)
         frappe.db.rollback()

@@ -16,9 +16,6 @@
   "modified": "2023-11-02 13:03:12.618431",
   "module": "TZCode",
   "name": "Factura Generada",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "print_format": "Factura de Venta",
   "property_value": null,
   "recipients": [
