@@ -26,6 +26,7 @@
         ) {
             toggle_sidebar_if_needed(frm);
         }
+        add_custom_buttons(frm);
         add_privileged_custom_buttons(frm);
         // add_goto_issue_listview_button(frm);
         render_go_to_client_system_btn(frm);
@@ -190,6 +191,36 @@
             { display: none; }
         `
         document.head.appendChild(style)
+    }
+    
+    function add_custom_buttons(frm) {
+        const { doc }  = frm;
+
+        if (!doc.customer) {
+            return ; // no customer, no buttons
+        }
+
+        frappe.db.get_list("Customer Database", {
+            filters: {
+                "enabled": 1,
+                "customer": doc.customer,
+            },
+            fields: ["name", "development_site"],
+        }).then(sites => {
+            if (!sites) {
+                return ; // no customer database
+            }
+
+            for (const { name: url, development_site } of sites) {
+                const label = `${development_site? "Dev": "Prod"} - ${url}`
+                frm.add_custom_button(
+                    label, function() {
+                        // open in new tab each site
+                        window.open(`https://${url}/login`, "_blank");
+                    }, "Open Site"
+                );
+            }
+        });
     }
     
     function add_privileged_custom_buttons(frm) {
