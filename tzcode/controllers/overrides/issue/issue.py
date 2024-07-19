@@ -408,7 +408,8 @@ class Issue(Document):
         """Checks whether there is an open timer for this issue and logs it if it exists.
         """
 
-        if self.has_state_changed_to("Working"):
+        if self.has_state_changed_to("Working") \
+            and "Support Manager" not in frappe.get_roles():
             out = frappe.db.sql(
                 f"""
                     Select
@@ -437,15 +438,8 @@ class Issue(Document):
             if not out:
                 frappe.msgprint(
                     f"""
-                        <h4>
-                            Be Careful: No open timers found for Issue {self.name}
-                        </h4>
-
-                        <p class="muted">
-                            In the best interest of us all and for the next one,
-                            please make sure you log your time properly.
-                        </p>
-                    """, indicator="red", title="Warning"
+                        Hey, as a friendly reminder, you have no open timers for Issue {self.name}
+                    """, indicator="blue", title="Information"
                 )
 
     def close_timesheet_if_open(self):
@@ -454,7 +448,11 @@ class Issue(Document):
         """
 
         if self.has_state_changed_to("Ready for QA") \
-            or self.has_state_changed_to("Completed"):
+            or self.has_state_changed_to("Completed") \
+            and (
+                self.resolver == frappe.session.user
+                and "Support Manager" not in frappe.get_roles()
+            ):
             # get any open timer for this issue
             doctype = "Timesheet"
             for detail, name in self.get_open_timelogs(
