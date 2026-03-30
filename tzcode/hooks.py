@@ -47,12 +47,16 @@ doctype_js = {
     "Timesheet": "public/js/timesheet.js",
     "Module Profile": "public/js/module_profile.js",
     "Payment Entry": "public/js/payment_entry.js",
+    "Interview": "public/js/interview.js",
+    "Job Applicant": "public/js/job_applicant.js",
+    "Sales Invoice": "public/js/sales_invoice.js",
 }
 
 doctype_list_js = {
     "Customer": "public/js/customer_list.js",
     "Issue": "public/js/issue_list.js",
     "Payroll Entry": "public/js/payroll_entry.js",
+    "Purchase Invoice": "public/js/purchase_invoice_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -225,6 +229,9 @@ doc_events = {
     "Task": {
         "validate": "tzcode.hook.task.validate",
     },
+    "Communication": {
+        "after_insert": "tzcode.controllers.communication.after_insert",
+    },
     "Sales Invoice": {
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
         "before_print": "tzcode.hook.sales_invoice.before_print",
@@ -298,6 +305,7 @@ scheduler_events = {
 override_whitelisted_methods = {
     "validate_token": "tzcode.client.validate_token",
     "store_data": "tzcode.webhooks.store_data",
+    "hrms.hr.doctype.interview.interview.get_expected_skill_set": "tzcode.webhooks.get_expected_skill_set",
     "issues.json": "tzcode.webhooks.query_issues"
 }
 
@@ -311,6 +319,7 @@ override_doctype_class = {
     "Timesheet": "tzcode.controllers.overrides.timesheet.Timesheet",
     "Blog Post": "tzcode.controllers.overrides.blog_post.BlogPost",
     "Module Profile": "tzcode.controllers.overrides.module_profile.ModuleProfile",
+    "Salary Slip": "tzcode.controllers.overrides.salary_slip.SalarySlip",
 }
 #
 # each overriding function accepts a `data` argument;
