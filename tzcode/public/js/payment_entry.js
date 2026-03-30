@@ -1,5 +1,14 @@
 frappe.ui.form.on("Payment Entry", {
-    refresh(frm) {
+    mode_of_payment(frm) {
+        if (!frm.doc.mode_of_payment || !frm.doc.company || !frm.doc.mode_of_payment)
+            return;
+        const method = "tzcode.controllers.payment_entry.get_bank_accounts"
+        const args = {"company": frm.doc.company, "mop": frm.doc.mode_of_payment}
+        frappe.call({method, args, callback: ({message}) => {
+            if (message) {
+                frm.set_value("bank_account", message);
+            }
+        }});
 
     },
 });

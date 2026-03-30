@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "label",
+  "status",
   "main_cb",
   "provider",
   "vps_details_sb",
@@ -127,11 +128,18 @@
    "fieldtype": "Table",
    "label": "Customers",
    "options": "Cloud Server Host"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "\nActive\nInactive\nThird Party"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-09 08:55:39.135574",
+ "modified": "2025-06-22 18:09:05.505307",
  "modified_by": "Administrator",
  "module": "TZCode",
  "name": "Cloud Server",

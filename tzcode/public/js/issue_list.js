@@ -520,17 +520,17 @@
 						doc.remote_reference
 					) {
 						return customer_formatter(
-							`${doc.remote_reference} - ${doc.customer}`, doc
+							`${doc.remote_reference} - ${doc.customer || doc.raised_by}`, doc
 						);
 					}
 
 					return customer_formatter(
-						`${doc.customer}`, doc
+						`${doc.customer || doc.raised_by}`, doc
 					);
 				}
 
 				return customer_formatter(
-					doc.customer, doc
+					doc.customer || doc.raised_by, doc
 				);
 			},
 			subject(value, df, doc) {
@@ -561,6 +561,6 @@
 		},
 		hide_name_column: 1,
 		colwidths: { "subject": 6 },
-		add_fields: ["priority", "issue_type", "customer", "approver", "resolver", "workflow_state", "due_date", "estimated_points", "remote_reference", "helper_user"],
+		add_fields: ["priority", "issue_type", "customer", "approver", "resolver", "workflow_state", "due_date", "estimated_points", "remote_reference", "helper_user", "raised_by"],
 	}
 }

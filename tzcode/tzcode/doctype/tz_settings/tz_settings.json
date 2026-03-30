@@ -6,9 +6,17 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "main_tb",
   "disable_validation_for_issue_states",
   "allow_timesheets_against_states",
-  "dev_employees"
+  "dev_employees",
+  "api_tab",
+  "bot_token",
+  "chat_id",
+  "disabled",
+  "api_cb",
+  "feed_url",
+  "last_entry"
  ],
  "fields": [
   {
@@ -29,12 +37,52 @@
    "fieldtype": "Table",
    "label": "Dev Employees",
    "options": "Dev Employees"
+  },
+  {
+   "fieldname": "main_tb",
+   "fieldtype": "Tab Break",
+   "label": "Main"
+  },
+  {
+   "fieldname": "api_tab",
+   "fieldtype": "Tab Break",
+   "label": "API"
+  },
+  {
+   "fieldname": "bot_token",
+   "fieldtype": "Password",
+   "label": "Bot Token"
+  },
+  {
+   "fieldname": "chat_id",
+   "fieldtype": "Data",
+   "label": "Chat ID"
+  },
+  {
+   "fieldname": "api_cb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "feed_url",
+   "fieldtype": "Data",
+   "label": "Feed URL"
+  },
+  {
+   "fieldname": "last_entry",
+   "fieldtype": "Data",
+   "label": "Last Entry"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-05 19:06:49.239679",
+ "modified": "2025-06-09 23:46:10.043931",
  "modified_by": "Administrator",
  "module": "TZCode",
  "name": "Tz Settings",

@@ -111,6 +111,9 @@ class Timesheet(
         ):
             return # We don't want to submit today's timesheet
 
+        if getattr(self, "dont_auto_submit", False):
+            return
+
         for timesheet_detail in self.time_logs:
             if not timesheet_detail.to_time:
                 return # We don't want to submit an incomplete timesheet

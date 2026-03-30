@@ -34,6 +34,7 @@ def _mark_issue_as_seen_in_meeting():
 					"Awaiting Customer",
 					"Acceptance Criteria Met",
 					"Deploying in Production",
+					"Testing",
 					"Completed"
 				) 
 				And delivered_for_qa Is Not Null

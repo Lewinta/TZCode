@@ -72,7 +72,7 @@ def get_exchange_rates(transaction_date=None):
             "from_currency": from_currency,
             "to_currency": to_currency,
             "transaction_date": transaction_date,
-            "for_buying": 0,
+            "for_buying": 1,
             "for_selling": 1,
         }
         dop_usd_exchange.update(defaults)

@@ -9,22 +9,22 @@ class AppraisalCycleNotFound(Exception):
     pass
 
 
-def create_developer_appraisals():
+def create_developer_appraisals(force=False):
     try:
-        _create_developer_appraisals()
+        _create_developer_appraisals(force=force)
     except AppraisalCycleNotFound:
         frappe.db.rollback()
         frappe.log_error()
         frappe.db.commit()
 
 
-def _create_developer_appraisals():
+def _create_developer_appraisals(force=False):
     """Run via scheduler events hourly.
     Create appraisals for all developers that are not in the appraisal cycle.
     """
 
     # run only on fridays
-    if not is_it_friday():
+    if not is_it_friday() and not force:
         return # only for fridays
 
     # get the appraisal cycle for the current week
@@ -78,7 +78,8 @@ def submit_all_draft_appraisals():
         return # only for mondays
 
     # wait up to 10 am to submit appraisals
-    if is_later_than_10_am():
+    # if is_later_than_10_am():
+    if is_between_10_am_and_12_am():
         doclist = get_doclist()
         submit_all_appraisals(doclist)
 
@@ -88,6 +89,10 @@ def is_it_monday():
 
 def is_it_friday():
     return frappe.utils.getdate().weekday() == 4
+
+
+def is_between_10_am_and_12_am():
+    return 10 <= frappe.utils.now_datetime().hour < 12
 
 
 def is_later_than_10_am():

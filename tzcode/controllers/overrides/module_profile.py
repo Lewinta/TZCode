@@ -1,4 +1,6 @@
 import frappe
+import math
+from frappe.utils import flt
 from frappe.query_builder import functions as fn
 from frappe.core.doctype.module_profile.module_profile import ModuleProfile as FrappeModuleProfile
 
@@ -13,7 +15,7 @@ class ModuleProfile(FrappeModuleProfile):
         self.users_amount = self.extra_users * 20.0
         self.modules_amount = sum([d.amount for d in self.module_details])
         self.total_amount = self.modules_amount + self.users_amount
-        self.monthly_fee = self.total_amount * 0.05
+        self.monthly_fee = math.ceil(flt(self.total_amount) * flt(self.license_percentage) / 100.00)
 
     def fetch_module_info(self):
         DT = frappe.qb.DocType("DocType")
@@ -35,7 +37,7 @@ class ModuleProfile(FrappeModuleProfile):
         for row in module_data:
             self.append("module_details", {
                 "module": row.module,
-                "doctypes": row.doctypes,
-                "rate": 15,
-                "amount": row.doctypes * 15,
+                "doctypes": self.custom_modules if row.module == "Custom" else row.doctypes,
+                "rate": self.rate,
+                "amount": row.doctypes * self.rate if row.module != "Custom" else self.custom_modules * self.rate,
             })

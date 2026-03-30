@@ -34,6 +34,8 @@
         notify_of_duplicates_presence(frm);
         render_elapsed_time(frm);
         disable_fields(frm);
+
+        frm.toggle_reqd("customer", true);
     }
 
     function after_save(frm) {
@@ -230,13 +232,15 @@
             "System Manager",
         ]
 
+        // temporary enable all users to view these buttons
+        add_create_child_issue_from_epic(frm)
+        add_view_child_issues_from_epic(frm)
+        add_view_epic_button(frm)
+        
         if (!frappe.user.has_role(privileged_roles)) {
             return "Not a privileged user"
         }
 
-        add_create_child_issue_from_epic(frm)
-        add_view_child_issues_from_epic(frm)
-        add_view_epic_button(frm)
         add_remove_remote_reference_btn(frm)
         add_toggle_preview_btn(frm)
     }
@@ -665,6 +669,19 @@
         }, 
         __("What is the reason for rejecting this issue?"),
         __("Reject"));
+
+var fieldname = "reason";
+var method = "itops.client.autocomplete_suggest";
+var domain = "Issue Evaluation";
+window.GhostAutocomplete.setupForDialog(reject_prompt, {
+	fieldname,               // fieldname of the Text Editor control
+	method,                  // dotted path to your whitelisted method
+	domain,                  // string or function(frm) => string
+	minChars: 3,
+	debounceMs: 160,
+	maxSuggestionChars: 120,
+	styles: { color: '#999', opacity: 0.8, fontStyle: 'italic' }
+})
     }
 
     function ask_for_not_approved_reason(frm, resolve, reject) {
@@ -862,6 +879,7 @@
                     fieldtype: "Select",
                     label: __("Issue Type"),
                     options: [
+                        "",
                         "Bug",
                         "New Feature",
                         "Task",

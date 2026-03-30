@@ -32,3 +32,9 @@ def query_issues(*args, **kwargs):
         "description",
     }
     return frappe.get_all("Issue", filters=kwargs, fields=fields)
+
+@frappe.whitelist()
+def get_expected_skill_set(interview_round):
+	return frappe.get_all(
+		"Expected Skill Set", filters={"parent": interview_round}, fields=["skill", "description"], order_by="idx"
+	)

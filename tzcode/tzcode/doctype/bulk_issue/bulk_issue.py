@@ -15,6 +15,15 @@ from . import locker
 
 
 class BulkIssue(Document):
+    def validate(self):
+        if self.is_new():
+            return "Only for existing documents"
+
+        if self.modified_by == "ticket@tzcode.tech" \
+            and frappe.session.user == "ticket@tzcode.tech" \
+            and not self.elapsed_time(seconds=60):
+            frappe.throw("You can't update this document yet")
+
     def after_insert(self):
         self.hsh = frappe.generate_hash()
 
@@ -53,6 +62,17 @@ class BulkIssue(Document):
         )
 
         frappe.msgprint("Bulk Issue updated")
+
+    def elapsed_time(self, seconds=60):
+        # verifies if the elapsed time is greater than the specified seconds
+        # if it is, then it returns True, otherwise it returns False
+        now = frappe.utils.now_datetime()
+
+        modified = frappe.utils.get_datetime(self.modified)
+        
+        elapsed = now - modified
+
+        return elapsed.total_seconds() > seconds
 
     def check_if_exists(self):
         # lock the table

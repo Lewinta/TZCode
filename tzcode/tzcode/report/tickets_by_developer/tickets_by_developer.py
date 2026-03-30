@@ -184,6 +184,7 @@ def get_development_data(filters):
 	resolver = Query.from_(USER).select(USER.full_name).where(USER.name == fn.Coalesce(ISSUE.resolver, '-'))
 	
 	current_condition = [
+		ISSUE.resolver.notnull(),
 		ISSUE.delivered_for_qa >= from_time,
 		ISSUE.delivered_for_qa <= to_time,
 		ISSUE.workflow_state.isin(['Ready for QA', 'Code Quality Passed', 'Closed', 'Completed'])

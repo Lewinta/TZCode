@@ -46,7 +46,12 @@ def create_appraisals_for_cycle(appraisal_cycle: AppraisalCycle, publish_progres
 	"""
 	count = 0
 
+	active_employees: set = get_active_employees()
+
 	for employee in appraisal_cycle.appraisees:
+		if employee.employee not in active_employees:
+			continue
+
 		try:
 			appraisal = frappe.new_doc("Appraisal")
 			appraisal.update({
@@ -70,3 +75,14 @@ def create_appraisals_for_cycle(appraisal_cycle: AppraisalCycle, publish_progres
 		except frappe.DuplicateEntryError:
 			# already exists
 			pass
+
+
+def get_active_employees() -> set:
+	"""Get all active employees"""
+	return set(
+		d.name for d in frappe.get_all(
+			"Employee",
+			filters={"status": "Active"},
+			fields=["name"],
+		)
+	)
