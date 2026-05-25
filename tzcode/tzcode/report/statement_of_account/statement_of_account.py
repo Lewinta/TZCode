@@ -41,6 +41,8 @@ def get_conditions(filters):
 		conditions += " and `viewStatement`.posting_date <= '{}'".format(filters.get("to_date"))
 	if filters.get("customer"):
 		conditions += " and `viewStatement`.customer = '{}'".format(filters.get("customer"))
+	if filters.get("invoice_currency"):
+		conditions += " and `tabSales Invoice`.currency = '{}'".format(filters.get("invoice_currency"))
 	if filters.get("unpaid"):
 		conditions += " and `viewStatement`.outstanding_amount > 0"
 			

@@ -241,8 +241,8 @@
             return "Not a privileged user"
         }
 
-        add_remove_remote_reference_btn(frm)
-        add_toggle_preview_btn(frm)
+        // add_remove_remote_reference_btn(frm)
+        // add_toggle_preview_btn(frm)
     }
     
     function add_goto_issue_listview_button(frm) {

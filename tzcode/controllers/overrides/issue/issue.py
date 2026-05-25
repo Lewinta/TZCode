@@ -747,8 +747,10 @@ def get_permission_query_conditions(user=None):
     return " and ".join(conditions)
     
 
-def has_permission():
-    pass
+def has_permission(doc=None, ptype=None, user=None, debug=False):
+    # Keep document-level permissions on Issue delegated to Frappe's core checks.
+    # Returning `None` here would be treated as explicit deny by the permission engine.
+    return True
 
 
 @frappe.whitelist()

@@ -1,75 +1,244 @@
-<h2 class="text-center">{%= __("Statement of Account") %}</h2>
-<h4 class="text-center">
-	{% 
-        if (filters.customer) { %}
-		    {%= filters.customer %}
-	    {% }
-    %} 
-</h4>
-<h5 class="text-center">
-	{%= frappe.datetime.str_to_user(filters.from_date) %}
-	{%= __("to") %}
-	{%= frappe.datetime.str_to_user(filters.to_date) %}
-</h5>
-<hr>
-<table class="table table-bordered">
-	<thead>
-		<tr>
-            <th> {%= __("Date") %} </th>
-            <th> {%= __("NCF") %} </th>
-            <th> {%= __("Reference") %} </th>
-            <th> {%= __("Neto") %} </th>
-            <th> {%= __("Tax Amt.") %} </th>
-            <th> {%= __("Gross Amt.") %} </th>
-            <th> {%= __("Paid Amt.") %} </th>
-            <th> {%= __("Pending Amt.") %} </th>
-            <th> {%= __("Last. Pymt") %} </th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for(var i=0, l=data.length; i<l; i++) { %}
-			<tr>
-			{% if(data[i].posting_date) { %}
-				<td>{%= frappe.datetime.str_to_user(data[i].posting_date) %}</td>
-				<td>{%= data[i].voucher_type %}
-					<br>{%= data[i].voucher_no %}
-				</td>
-				{% var longest_word = cstr(data[i].remarks).split(" ").reduce((longest, word) => word.length > longest.length ? word : longest, ""); %}
-				<td {% if longest_word.length > 45 %} class="overflow-wrap-anywhere" {% endif %}>
-					<span>
-					{% if(!(filters.party || filters.account)) { %}
-						{%= data[i].party || data[i].account %}
-						<br>
-					{% } %}
+<style>
+:root {
+  --soa-primary: #1a3c6c;
+  --soa-primary-dark: #122a4d;
+  --soa-accent: #2e6cb5;
+  --soa-light-accent: #E8EEF7;
+  --soa-light-bg: #F5F7FB;
+  --soa-text-dark: #2D2D2D;
+  --soa-text-mid: #666666;
+  --soa-white: #FFFFFF;
+  --soa-border: #DCE3EE;
+}
 
-					<br>{%= __("Remarks") %}: {%= data[i].remarks %}
-					{% if(data[i].bill_no) { %}
-						<br>{%= __("Supplier Invoice No") %}: {%= data[i].bill_no %}
-					{% } %}
-					</span>
-				</td>
-				<td style="text-align: right">
-					{%= format_currency(data[i].debit, filters.presentation_currency) %}
-				</td>
-				<td style="text-align: right">
-					{%= format_currency(data[i].credit, filters.presentation_currency) %}
-				</td>
-			{% } else { %}
-				<td></td>
-				<td></td>
-				<td><b>{%= frappe.format(data[i].account, {fieldtype: "Link"}) || "&nbsp;" %}</b></td>
-				<td style="text-align: right">
-					{%= data[i].account && format_currency(data[i].debit, filters.presentation_currency || data[i].account_currency) %}
-				</td>
-				<td style="text-align: right">
-					{%= data[i].account && format_currency(data[i].credit, filters.presentation_currency || data[i].account_currency) %}
-				</td>
-			{% } %}
-				<td style="text-align: right">
-					{%= format_currency(data[i].balance, filters.presentation_currency || data[i].account_currency) %}
-				</td>
-			</tr>
-		{% } %}
-	</tbody>
-</table>
-<p class="text-right text-muted">Printed On {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %}</p>
+@page { size: A4 landscape; margin: 8mm 8mm; }
+
+body, .print-format {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--soa-text-dark);
+  font-size: 8pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.soa-print { padding: 0; margin: 0; }
+
+.soa-header { text-align: center; padding: 2px 0 8px 0; }
+.soa-logo { max-height: 50px; margin: 0 auto 4px auto; display: block; }
+.soa-title {
+  font-size: 15pt;
+  font-weight: 800;
+  color: var(--soa-primary);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 2px 0 6px 0;
+}
+
+.soa-meta {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 4px auto 0 auto;
+  font-size: 8pt;
+}
+.soa-meta-item { display: inline-flex; align-items: center; gap: 5px; }
+.soa-meta-label {
+  color: var(--soa-text-mid);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 7pt;
+  letter-spacing: 0.5px;
+}
+.soa-meta-value { color: var(--soa-primary); font-weight: 700; }
+.soa-meta-sep { color: var(--soa-accent); margin: 0 3px; font-weight: 700; }
+
+.soa-customer {
+  margin: 8px auto 0 auto;
+  background: var(--soa-light-bg);
+  border-left: 3px solid var(--soa-accent);
+  border-right: 3px solid var(--soa-accent);
+  border-radius: 6px;
+  padding: 5px 14px;
+  display: inline-flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.soa-customer-label {
+  text-transform: uppercase;
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--soa-text-mid);
+  letter-spacing: 0.5px;
+}
+.soa-customer-value {
+  font-size: 10pt;
+  font-weight: 800;
+  color: var(--soa-primary);
+}
+
+.soa-table-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--soa-border);
+  margin-top: 6px;
+}
+.soa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  table-layout: auto;
+}
+.soa-table thead th {
+  background: var(--soa-primary) !important;
+  background-color: var(--soa-primary) !important;
+  color: var(--soa-white) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 7pt;
+  letter-spacing: 0.4px;
+  padding: 5px 6px;
+  text-align: left;
+  border: none;
+  line-height: 1.15;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.soa-table thead th.num { text-align: right; }
+
+.soa-table tbody td {
+  padding: 2.5px 6px;
+  border-bottom: 1px solid var(--soa-border);
+  vertical-align: middle;
+  font-size: 7.5pt;
+  line-height: 1.2;
+  color: var(--soa-text-dark);
+}
+.soa-table tbody td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.soa-table tbody tr:nth-child(even) td { background: var(--soa-light-bg); }
+.soa-table tbody tr:last-child td { border-bottom: none; }
+
+.soa-table tbody tr.total-row td {
+  background: var(--soa-primary) !important;
+  background-color: var(--soa-primary) !important;
+  color: var(--soa-white) !important;
+  font-weight: 800;
+  font-size: 8pt;
+  padding: 5px 6px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.soa-empty {
+  text-align: center;
+  padding: 24px 12px !important;
+  color: var(--soa-text-mid);
+  font-style: italic;
+}
+
+.soa-footer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7pt;
+  color: var(--soa-text-mid);
+  padding: 4px 4px 0 4px;
+  border-top: 1px solid var(--soa-border);
+}
+.soa-footer strong { color: var(--soa-primary); }
+</style>
+
+<div class="soa-print">
+  <div class="soa-header">
+    <img src="https://tzcode.tech/images/sL.png" class="soa-logo" alt="TZCode" />
+    <div class="soa-title">{{ __("Statement of Accounts") }}</div>
+    <div class="soa-meta">
+      {% if (filters && (filters.from_date || filters.to_date)) { %}
+        <div class="soa-meta-item">
+          <span class="soa-meta-label">{{ __("Period") }}</span>
+          <span class="soa-meta-value">
+            {%= filters.from_date ? frappe.datetime.str_to_user(filters.from_date) : "—" %}
+            <span class="soa-meta-sep">→</span>
+            {%= filters.to_date ? frappe.datetime.str_to_user(filters.to_date) : "—" %}
+          </span>
+        </div>
+      {% } %}
+      {% if (filters && filters.currency) { %}
+        <div class="soa-meta-item">
+          <span class="soa-meta-label">{{ __("Currency") }}</span>
+          <span class="soa-meta-value">{{ __(filters.currency) }}</span>
+        </div>
+      {% } %}
+      {% if (filters && filters.invoice_currency) { %}
+        <div class="soa-meta-item">
+          <span class="soa-meta-label">{{ __("Invoice Currency") }}</span>
+          <span class="soa-meta-value">{%= filters.invoice_currency %}</span>
+        </div>
+      {% } %}
+      <div class="soa-meta-item">
+        <span class="soa-meta-label">{{ __("Printed") }}</span>
+        <span class="soa-meta-value">{%= frappe.datetime.str_to_user(frappe.datetime.now_datetime()) %}</span>
+      </div>
+    </div>
+    {% if (filters && filters.customer) { %}
+      <div class="soa-customer">
+        <span class="soa-customer-label">{{ __("Customer") }}</span>
+        <span class="soa-customer-value">{%= filters.customer %}</span>
+      </div>
+    {% } %}
+  </div>
+
+  {% var visible_cols = columns.slice(0, Math.max(0, columns.length - 2)); %}
+
+  <div class="soa-table-wrapper">
+    <table class="soa-table">
+      <thead>
+        <tr>
+          {% for (var c=0; c<visible_cols.length; c++) { %}
+            {% var col = visible_cols[c]; %}
+            {% var is_num = ["Currency","Float","Int","Percent"].indexOf(col.fieldtype) >= 0; %}
+            <th class="{%= is_num ? 'num' : '' %}">{{ __(col.label || col.name) }}</th>
+          {% } %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if (!data || data.length == 0) { %}
+          <tr><td colspan="{%= visible_cols.length %}" class="soa-empty">{{ __("No data found for the selected filters.") }}</td></tr>
+        {% } %}
+        {% for (var i=0; i<data.length; i++) { %}
+          {% var row = data[i]; %}
+          <tr class="{%= row.is_total_row ? 'total-row' : '' %}">
+            {% for (var c=0; c<visible_cols.length; c++) { %}
+              {% var col = visible_cols[c]; %}
+              {% var is_num = ["Currency","Float","Int","Percent"].indexOf(col.fieldtype) >= 0; %}
+              {% var key = col.fieldname || col.id || col.name; %}
+              {% var value = row[key]; %}
+              <td class="{%= is_num ? 'num' : '' %}">
+                {% if (row.is_total_row && c == 0) { %}
+                  {{ __("Total") }}
+                {% } else if (col.fieldtype == "Date" && value) { %}
+                  {%= frappe.datetime.str_to_user(value) %}
+                {% } else if (col.fieldtype == "Currency") { %}
+                  {%= format_currency(value || 0) %}
+                {% } else { %}
+                  {%= value == null ? "" : value %}
+                {% } %}
+              </td>
+            {% } %}
+          </tr>
+        {% } %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="soa-footer">
+    <div class="soa-footer-left">{{ __("Generated by") }} <strong>TZCode ERP</strong></div>
+    <div class="soa-footer-right">{%= data ? data.length - 1 : 0 %} {{ __("Rows") }}</div>
+  </div>
+</div>

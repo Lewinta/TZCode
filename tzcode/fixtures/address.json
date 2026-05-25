@@ -19,10 +19,7 @@
    {
     "link_doctype": "Company",
     "link_name": "TZCode",
-    "link_title": "TZCode",
-    "parent": "TZCode Billing-Billing",
-    "parentfield": "links",
-    "parenttype": "Address"
+    "link_title": "TZCode"
    }
   ],
   "modified": "2023-11-02 13:14:29.991653",

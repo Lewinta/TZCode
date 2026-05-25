@@ -1,11 +1,8 @@
-from __future__ import unicode_literals
-import frappe
-from frappe import _
-from frappe.website.doctype.blog_post.blog_post import BlogPost as ERPNextBlogPost
+from __future__ import annotations
+
+from frappe.model.document import Document
 
 
-class BlogPost(ERPNextBlogPost):
-    def validate(self):
-        pass
-
-
+class BlogPost(Document):
+	def validate(self):
+		pass

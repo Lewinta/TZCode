@@ -18,7 +18,7 @@ class SalarySlip(HRMSSalarySlip):
 		employee = frappe.get_cached_doc("Employee", self.employee).as_dict()
 
 		if not hasattr(self, "_salary_structure_assignment"):
-			self.set_salary_structure_assignement()
+			self.set_salary_structure_assignment()
 
 		data.update(self._salary_structure_assignment)
 		data.update(employee)
