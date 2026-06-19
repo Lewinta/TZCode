@@ -44,8 +44,18 @@ SELECT
     pinv.other_taxes,
     pinv.legal_tip,
     pinv.base_total,
-    pinv.monto_facturado_servicios,
-    pinv.monto_facturado_bienes,
+    ABS((
+        SELECT IFNULL(SUM(pii.base_amount), 0)
+        FROM `tabPurchase Invoice Item` AS pii
+        WHERE pii.parent = pinv.name
+          AND pii.item_type = 'Servicios'
+    )) AS monto_facturado_servicios,
+    ABS((
+        SELECT IFNULL(SUM(pii.base_amount), 0)
+        FROM `tabPurchase Invoice Item` AS pii
+        WHERE pii.parent = pinv.name
+          AND pii.item_type = 'Bienes'
+    )) AS monto_facturado_bienes,
     per.isr_category,
     per.isr_amount,
     pinv.mop
@@ -90,8 +100,18 @@ SELECT
     pinv.other_taxes,
     pinv.legal_tip,
     pinv.base_total,
-    pinv.monto_facturado_servicios,
-    pinv.monto_facturado_bienes,
+    ABS((
+        SELECT IFNULL(SUM(pii.base_amount), 0)
+        FROM `tabPurchase Invoice Item` AS pii
+        WHERE pii.parent = pinv.name
+          AND pii.item_type = 'Servicios'
+    )) AS monto_facturado_servicios,
+    ABS((
+        SELECT IFNULL(SUM(pii.base_amount), 0)
+        FROM `tabPurchase Invoice Item` AS pii
+        WHERE pii.parent = pinv.name
+          AND pii.item_type = 'Bienes'
+    )) AS monto_facturado_bienes,
     per.isr_category,
     per.isr_amount,
     pinv.mop
