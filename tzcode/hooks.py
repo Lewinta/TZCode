@@ -57,6 +57,7 @@ doctype_list_js = {
     "Issue": "public/js/issue_list.js",
     "Payroll Entry": "public/js/payroll_entry.js",
     "Purchase Invoice": "public/js/purchase_invoice_list.js",
+    "Lead": "public/js/lead_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -112,6 +113,9 @@ fixtures = [
                     "Purchase Invoice-naming_series-default",
                     "Purchase Invoice-naming_series-options",
                     "Purchase Invoice-disable_rounded_total-default",
+                    "Sales Invoice-cost_center-reqd",
+                    "Purchase Invoice-cost_center-reqd",
+                    "Purchase Invoice-cost_center-in_standard_filter",
                 )
             )
         }
@@ -233,6 +237,7 @@ doc_events = {
         "after_insert": "tzcode.controllers.communication.after_insert",
     },
     "Sales Invoice": {
+        "validate": "tzcode.hook.sales_invoice.validate",
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
         "before_print": "tzcode.hook.sales_invoice.before_print",
         "on_submit": "tzcode.hook.sales_invoice.on_submit",

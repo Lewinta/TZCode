@@ -69,11 +69,11 @@ class Issue(Document):
     # and how many sessions each developer has been working on the ticket
     # I'd like to know when first it was started and when it was last worked on (if it's still ongoing it should show the current time)
 
-    # def after_insert(self):
-    #     trigger_discord_notifications({
-    #         "doc": self,
-    #         "is_new": True,
-    #     })
+    def after_insert(self):
+        trigger_discord_notifications({
+            "doc": self,
+            "is_new": True,
+        })
 
     def validate(self):
         self.auto_set_resolver_if_not_set()

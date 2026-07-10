@@ -1,7 +1,83 @@
 import frappe
 
+from frappe import _
 from frappe.core.doctype.communication.email import make as send_email
 from frappe.utils import add_months
+
+
+def validate(doc, method):
+    set_cost_center(doc)
+
+
+def set_cost_center(doc):
+    # Cascade the parent cost_center to items and taxes so reporting stays consistent.
+    if not doc.cost_center:
+        return
+    for row in (doc.items or []) + (doc.taxes or []):
+        row.cost_center = doc.cost_center
+
+
+@frappe.whitelist()
+def update_cost_center(sales_invoice: str, cost_center: str):
+    if not frappe.has_permission("Sales Invoice", "write"):
+        frappe.throw(_("You do not have permission to update Sales Invoices."))
+
+    if "System Manager" not in frappe.get_roles():
+        frappe.throw(_("Only System Managers can perform this action."))
+
+    if not sales_invoice or not cost_center:
+        frappe.throw(_("Sales Invoice and Cost Center are required."))
+
+    if not frappe.db.exists("Sales Invoice", sales_invoice):
+        frappe.throw(_("Sales Invoice not found."))
+
+    if not frappe.db.exists("Cost Center", cost_center):
+        frappe.throw(_("Invalid Cost Center."))
+
+    si = frappe.get_doc("Sales Invoice", sales_invoice)
+
+    if si.docstatus != 1:
+        frappe.throw(_("Only submitted Sales Invoices can be updated."))
+
+    if si.cost_center == cost_center:
+        frappe.throw(_("New Cost Center is the same as the current one."))
+
+    si.db_set("cost_center", cost_center, update_modified=False)
+
+    for item in si.items:
+        item.db_set("cost_center", cost_center, update_modified=False)
+
+    gl_entries = frappe.db.get_all(
+        "GL Entry",
+        filters={
+            "voucher_type": "Sales Invoice",
+            "voucher_no": si.name,
+            "is_cancelled": 0,
+        },
+        fields=["name", "cost_center"],
+    )
+
+    if not gl_entries:
+        frappe.throw(_("No GL Entries found for this Sales Invoice."))
+
+    for gle in gl_entries:
+        if gle.cost_center != cost_center:
+            frappe.db.set_value(
+                "GL Entry",
+                gle.name,
+                "cost_center",
+                cost_center,
+                update_modified=False,
+            )
+
+    frappe.db.commit()
+
+    return {
+        "status": "success",
+        "sales_invoice": si.name,
+        "new_cost_center": cost_center,
+    }
+
 
 def before_insert(doc, method):
     # update exchange rate

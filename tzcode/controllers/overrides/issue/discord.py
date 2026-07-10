@@ -1,59 +1,28 @@
 # Copyright (c) 2023, Yefri Tavarez and contributors
 # For license information, please see license.txt
 
-import requests
-
 import frappe
 from frappe.utils import strip_html_tags
-
 
 from typing import Dict
 
 PUBLIC_URL_TEMPLATE = "{{ url }}/{{ doctype }}/{{ name }}?format={{ print_format|urlencode }}&key={{ key|urlencode }}"
 
-# this should be done in a doctype
 client_manager = {
     "AMALOG SRL": "miguel.higuera@tzcode.tech",
     "LOGOMARCA": "miguel.higuera@tzcode.tech",
 }
 
-url_template = "https://discord.com/api/webhooks/{webhook_id}/{webhook_token}"
-
-# this should be done in a doctype
-office_manager = {
-    "brenorramirez@tzcode.tech": ("1173831622034997308", "F7CH65yxoQLbfh_wIIxR22ai-f4aRDqwY-pe0_Ou1tDvY2bRCM3-nk5_1KMQ1Vws_sPZ"),
-    "isauraperez@tzcode.tech": ("1173834963901218858", "v8ZnfDj0Nl3P2YQrxZLGy9sBFdwbeGJC1xGWDJxixxEWYhecJhCmU410ixGkenOKJKpz"),
-    "lewinvillar@tzcode.tech": ("1173831452983566446", "WLAQ0hmdZ65olPGLghMzLLAOW7lNp3siSphMXgDw1aUhPgb5L2idI1B7br300LorAKqn"),
-    "miguel.higuera@tzcode.tech": ("1173831313652989962", "i6iOvOCy_MQVvqdzV3pAAordyGg2jHG_Ore8AIie_3DgoTbMnW927TyWhTpjwKrVuzy0"),
-    "rainierpolanco@tzcode.tech": ("1173830877885767751", "v2O77CNSqYkvCWy8epTziOqh74KyiT4JpzoeO40JehbGVQFGT6BV6WayEIZSFR5EUMnq"),
-    "reyferreras@tzcode.tech": ("1173830539648716851", "3geA0iLo8e-95OP7AD_6zYSgtU22FCq1iFwsqHcJZnQ9UXvCcsTcuoeu-3hppt_J6Nsb"),
-    "walquiriapena@tzcode.tech": ("1173834963901218858", "v8ZnfDj0Nl3P2YQrxZLGy9sBFdwbeGJC1xGWDJxixxEWYhecJhCmU410ixGkenOKJKpz"),
-    "yefritavarez@tzcode.tech": ("1173704570770305084", "JW1kD0WWmPSdyOqQ7xGoJXcOs8NBkWQLcAzEMJbFvzBC3qEBdBP2dEMhY9B77RBLc4uj"),
-}
-
-# this should be done in a doctype
-role_manager = {
-    "Support Manager": {
-        "lewinvillar@tzcode.tech",
-        "yefritavarez@tzcode.tech",
-    },
-    "Implementer Team": {
-        "brenorramirez@tzcode.tech",
-    },
-    "Developer": {
-        "miguel.higuera@tzcode.tech",
-    },
-    "Developer Junior": {
-        "rainierpolanco@tzcode.tech",
-        "reyferreras@tzcode.tech",
-    },
-    "Accounting Team": {
-        "isauraperez@tzcode.tech",
-        "walquiriapena@tzcode.tech",
-    }
-}
-
 ticket_manager = "ticket@tzcode.tech"
+
+
+def role_manager():
+    from itops.discord.delivery import get_role_manager_map
+    return get_role_manager_map()
+
+
+def users_for_role(role_name):
+    return role_manager().get(role_name, [])
 
 # done here to avoid having to indent the whole thing
 footer_template = """
@@ -211,7 +180,7 @@ def notify_support_managers_on_new_tickets(doc):
     # else:
     # 	"""Notify Support Managers of the new ticket"""
 
-    for user in role_manager["Support Manager"]:
+    for user in role_manager().get("Support Manager", []):
         if user == current_user:
             continue # don't notify the current user
 
@@ -223,6 +192,7 @@ def notify_support_managers_on_new_tickets(doc):
         notify_channel(
             user,
             message,
+            context=args,
         )
 
 
@@ -251,6 +221,9 @@ def notify_of_workflow_state_change(before_save, doc):
         "share_url": get_share_url(doc.name),
     }
 
+    def notify(user, message):
+        notify_channel(user, message, context=args)
+
     if doc.workflow_state == "Ready for Development":
         if "Support Manager" in user_roles:
             if doc.resolver:
@@ -261,15 +234,15 @@ def notify_of_workflow_state_change(before_save, doc):
                     {footer_template.format(**args)}
                 """
 
-                notify_channel(
+                notify(
                     doc.resolver,
                     message,
                 )
             else:
                 """Notify Developer Team of the workflow_state change"""
                 role_list = list()
-                role_list.extend(role_manager["Developer"])
-                role_list.extend(role_manager["Developer Junior"])
+                role_list.extend(users_for_role("Developer"))
+                role_list.extend(users_for_role("Developer Junior"))
 
                 for user in role_list:
                     message = f"""
@@ -277,31 +250,31 @@ def notify_of_workflow_state_change(before_save, doc):
                         {footer_template.format(**args)}
                     """
 
-                    notify_channel(
+                    notify(
                         user,
                         message,
                     )
         else:
             """Notify Support Managers of the workflow_state change"""
             if not doc.resolver:
-                for user in role_manager["Support Manager"]:
+                for user in users_for_role("Support Manager"):
                     if user == current_user:
                         continue # don't notify the current user (I know this is unlikely)
 
-                    notify_channel(user, f"""
+                    notify(user, f"""
                         {ticket_ready_for_development_without_resolver_and_not_a_manager.format(**args)}
                         {footer_template.format(**args)}                        
                     """)
             else:
                 users = list()
-                users.extend(role_manager["Support Manager"])
-                users.extend(role_manager["Developer"])
+                users.extend(users_for_role("Support Manager"))
+                users.extend(users_for_role("Developer"))
 
                 for user in users:
                     if user == current_user:
                         continue # don't notify the current user
 
-                    notify_channel(user, f"""
+                    notify(user, f"""
                         {ticket_ready_for_development_with_resolver_and_not_a_manager.format(**args)}
                         {footer_template.format(**args)}
                     """)
@@ -311,39 +284,39 @@ def notify_of_workflow_state_change(before_save, doc):
             if doc.resolver:
                 """Notify Developer of the workflow_state change"""
                 if doc.resolver != current_user:
-                    notify_channel(doc.resolver, f"""
+                    notify(doc.resolver, f"""
                         {ticket_marked_as_working_by_someone_else_msg_template.format(**args)}
                         {footer_template.format(**args)}
                     """)
 
-                    if current_user not in role_manager["Support Manager"]:
-                        for user in role_manager["Support Manager"]:
+                    if current_user not in users_for_role("Support Manager"):
+                        for user in users_for_role("Support Manager"):
                             if user == current_user:
                                 continue
 
-                            notify_channel(user, f"""
+                            notify(user, f"""
                                 {ticket_marked_as_working_by_someone_else_msg_template.format(**args)}
                                 {footer_template.format(**args)}
                             """)
                 else:
                     """Notify Managers of ticket acquired by resolver"""
-                    if current_user not in role_manager["Support Manager"]:
-                        for user in role_manager["Support Manager"]:
+                    if current_user not in users_for_role("Support Manager"):
+                        for user in users_for_role("Support Manager"):
                             if user == current_user:
                                 continue
 
-                            notify_channel(user, f"""
+                            notify(user, f"""
                                 {ticket_marked_as_working_by_developer_msg_template.format(**args)}
                                 {footer_template.format(**args)}
                             """)
             else:
                 """Notify Managers of ticket started without resolver"""
-                if current_user not in role_manager["Support Manager"]:
-                    for user in role_manager["Support Manager"]:
+                if current_user not in users_for_role("Support Manager"):
+                    for user in users_for_role("Support Manager"):
                         if user == current_user:
                             continue
 
-                        notify_channel(user, f"""
+                        notify(user, f"""
                             {ticket_marked_as_working_by_somebody_and_not_resolver_msg_template.format(**args)}
                             {footer_template.format(**args)}
                         """)
@@ -351,46 +324,46 @@ def notify_of_workflow_state_change(before_save, doc):
             if doc.resolver:
                 """Notify Developer of the workflow_state change"""
                 if doc.resolver != current_user:
-                    notify_channel(doc.resolver, f"""
+                    notify(doc.resolver, f"""
                         {ticket_remarked_as_reworking_by_someone_else_msg_template.format(**args)}
                         {footer_template.format(**args)}
                     """)
 
-                    if current_user not in role_manager["Support Manager"]:
-                        for user in role_manager["Support Manager"]:
+                    if current_user not in users_for_role("Support Manager"):
+                        for user in users_for_role("Support Manager"):
                             if user == current_user:
                                 continue
 
-                            notify_channel(user, f"""
+                            notify(user, f"""
                                 {ticket_remarked_as_reworking_by_someone_else_msg_template.format(**args)}
                                 {footer_template.format(**args)}
                             """)
                 else:
                     """Notify Managers of ticket re-acquired by resolver"""
-                    if current_user not in role_manager["Support Manager"]:
-                        for user in role_manager["Support Manager"]:
+                    if current_user not in users_for_role("Support Manager"):
+                        for user in users_for_role("Support Manager"):
                             if user == current_user:
                                 continue
 
-                            notify_channel(user, f"""
+                            notify(user, f"""
                                 {ticket_marked_as_reworking_by_developer_msg_template.format(**args)}
                                 {footer_template.format(**args)}
                             """)
             else:
                 """Notify Managers of ticket started without resolver"""
-                if current_user not in role_manager["Support Manager"]:
-                    for user in role_manager["Support Manager"]:
+                if current_user not in users_for_role("Support Manager"):
+                    for user in users_for_role("Support Manager"):
                         if user == current_user:
                             continue
 
-                        notify_channel(user, f"""
+                        notify(user, f"""
                             {ticket_remarked_as_working_by_somebody_and_not_resolver_msg_template.format(**args)}
                             {footer_template.format(**args)}
                         """)
         elif before_save.workflow_state == "On Hold":
             """Notify the developer that the ticket is back to Working"""
             if doc.resolver and doc.resolver != current_user:
-                notify_channel(doc.resolver, f"""
+                notify(doc.resolver, f"""
                     {ticket_marked_as_working_by_someone_else_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
@@ -398,24 +371,24 @@ def notify_of_workflow_state_change(before_save, doc):
 
     elif doc.workflow_state == "On Hold":
         """Notify Support Managers of the workflow_state change"""
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_placed_on_hold_by_non_manager_user.format(**args)}
                     {footer_template.format(**args)}
                 """)
         else:
             if doc.resolver and doc.resolver != current_user:
-                notify_channel(doc.resolver, f"""
+                notify(doc.resolver, f"""
                     {ticket_placed_on_hold_for_developer.format(**args)}
                     {footer_template.format(**args)}
                 """)
 
     elif doc.workflow_state == "Forgotten":
         """Notify Support Managers of the workflow_state change"""
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_marked_as_forgotten_by_non_manager_user.format(**args)}
                     {footer_template.format(**args)}
                 """)
@@ -430,97 +403,83 @@ def notify_of_workflow_state_change(before_save, doc):
         # and besides that, whether or not the ticket was not closed by a Manager we will inform the 
         # Developer of the completion (unless he is the one closing the ticket)
         
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_completed_by_non_manager_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
 
         if doc.resolver and doc.resolver != current_user:
-            notify_channel(doc.resolver, f"""
+            notify(doc.resolver, f"""
             {ticket_completed_msg_template.format(**args)}
             {footer_template.format(**args)}
             """)
     elif doc.workflow_state == "Code Quality Rejected":
         """Notify Developer of the workflow_state change"""
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_rejected_by_non_manager_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
 
         if doc.resolver and doc.resolver != current_user:
-            notify_channel(doc.resolver, f"""
+            notify(doc.resolver, f"""
             {ticket_rejected_msg_template.format(**args)}
             {footer_template.format(**args)}
             """)
     elif doc.workflow_state == "Code Quality Passed":
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_marked_as_qa_passed_by_non_manager_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
 
         if doc.resolver and doc.resolver != current_user:
-            notify_channel(doc.resolver, f"""
+            notify(doc.resolver, f"""
             {ticket_marked_as_qa_passed_msg_template.format(**args)}
             {footer_template.format(**args)}
             """)
     elif doc.workflow_state == "Ready for QA":
         """Notify Support Managers of the workflow_state change"""
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {ticket_marked_as_ready_for_qa_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
     else:
         """Notify Support Managers of the workflow_state change"""
-        if current_user not in role_manager["Support Manager"]:
-            for user in role_manager["Support Manager"]:
-                notify_channel(user, f"""
+        if current_user not in users_for_role("Support Manager"):
+            for user in users_for_role("Support Manager"):
+                notify(user, f"""
                     {something_is_going_msg_template.format(**args)}
                     {footer_template.format(**args)}
                 """)
 
         
 def get_issue_link(name):
-    # doctype = "Issue"
-    # link_name = f"{doctype}: {name}"
-    # return frappe.utils.get_link_to_form(doctype, name, link_name)
-
-    return f"https://bo.tzcode.tech/app/issue/{name}"
+    from itops.discord.settings import get_site_url
+    return f"{get_site_url()}/app/issue/{name}"
 
 
-def notify_channel(user, message):
-    webhook_id, webhook_token = office_manager[user]
-    url = url_template.format(
-        webhook_id=webhook_id,
-        webhook_token=webhook_token,
-    )
-
-    body = {
-        "content": message,
-    }
-
-    response = requests.post(url, json=body)
-
-    return response.status_code == 204
+def notify_channel(user, message, context=None):
+    from itops.discord.delivery import send_issue_notification
+    send_issue_notification(user, message, context=context)
 
 
 
 def get_share_url(name):
+    from itops.discord.settings import get_site_url
     doctype = "Issue"
     doc = frappe.get_doc(doctype, name)
 
     key = doc.get_document_share_key()
-    # return f"https://bo.tzcode.tech/issue/{name}?key={key}"
 
     opts = {
-        "url": "https://bo.tzcode.tech",
+        "url": get_site_url(),
         "doctype": doctype,
         "name": name,
         "print_format": "Issue",

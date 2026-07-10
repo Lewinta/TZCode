@@ -18,6 +18,12 @@ frappe.query_reports["Tax Evaluation"] = {
 			"reqd": 1,
 			"default": frappe.datetime.month_end()
 		},
+		{
+			"label": __("Summary"),
+			"fieldname": "summary",
+			"fieldtype": "Check",
+			"default": 1
+		},
 	]
 
 };
