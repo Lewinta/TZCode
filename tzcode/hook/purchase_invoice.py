@@ -1,10 +1,16 @@
 import frappe
-import frappe
 from frappe import _
 from frappe.utils import cint
 from tzcode.hook.accounts_controller import cancel_gl_entries, delete_gl_entries
 
 def validate(doc, method):
+    set_cost_center(doc)
+
+def before_update_after_submit(doc, method):
+    # `validate` no corre en "update after submit", asi que el cascade hay que
+    # repetirlo aqui: si no, cambiar el centro de costo de una factura enviada
+    # repostea el GL con el CC nuevo en cuentas por pagar/banco pero deja los
+    # items (y por tanto el gasto) en el CC viejo.
     set_cost_center(doc)
 
 def on_cancel(doc, method):
@@ -14,8 +20,10 @@ def on_trash(doc, method):
     delete_gl_entries(doc)
 
 def set_cost_center(doc):
-    for item in doc.items + doc.taxes:
-        item.cost_center = doc.cost_center
+    if not doc.cost_center:
+        return
+    for row in (doc.items or []) + (doc.taxes or []):
+        row.cost_center = doc.cost_center
 
 @frappe.whitelist()
 def update_cost_center(purchase_invoice: str, cost_center: str):
@@ -47,8 +55,8 @@ def update_cost_center(purchase_invoice: str, cost_center: str):
     pi.db_set("cost_center", cost_center, update_modified=False)
 
     # ---------- Update Items ----------
-    for item in pi.items:
-        item.db_set("cost_center", cost_center, update_modified=False)
+    for row in pi.items + pi.taxes:
+        row.db_set("cost_center", cost_center, update_modified=False)
 
     # ---------- Update GL Entries ----------
     gl_entries = frappe.db.get_all(

@@ -237,7 +237,9 @@ doc_events = {
         "after_insert": "tzcode.controllers.communication.after_insert",
     },
     "Sales Invoice": {
+        "before_validate": "tzcode.hook.sales_invoice.before_validate",
         "validate": "tzcode.hook.sales_invoice.validate",
+        "before_update_after_submit": "tzcode.hook.sales_invoice.before_update_after_submit",
         "before_insert": "tzcode.hook.sales_invoice.before_insert",
         "before_print": "tzcode.hook.sales_invoice.before_print",
         "on_submit": "tzcode.hook.sales_invoice.on_submit",
@@ -251,6 +253,7 @@ doc_events = {
     },
     "Purchase Invoice": {
         "validate": "tzcode.hook.purchase_invoice.validate",
+        "before_update_after_submit": "tzcode.hook.purchase_invoice.before_update_after_submit",
         "on_cancel": "tzcode.hook.purchase_invoice.on_cancel",
         "on_trash": "tzcode.hook.purchase_invoice.on_trash",
     },
@@ -289,14 +292,23 @@ scheduler_events = {
 		"tzcode.tasks.daily"
 	],
 	"hourly": [
-		"tzcode.tasks.hourly"
+		"tzcode.tasks.hourly",
+		# Enforces the 24h Upwork retention cap (API Terms s7, API & MCP Terms s8.3).
+		"tzcode.upwork.scheduled_purge"
 	],
 	"weekly": [
 		"tzcode.tasks.weekly"
 	],
 	"monthly": [
 		"tzcode.tasks.monthly"
-	]
+	],
+	"cron": {
+		# Upwork marketplace ingest. One narrow, filtered search per run:
+		# ~48 requests/day, far below the 300/minute and 40,000/day limits.
+		"*/30 * * * *": [
+			"tzcode.upwork.scheduled_poll"
+		]
+	}
 }
 
 # Testing
@@ -311,7 +323,8 @@ override_whitelisted_methods = {
     "validate_token": "tzcode.client.validate_token",
     "store_data": "tzcode.webhooks.store_data",
     "hrms.hr.doctype.interview.interview.get_expected_skill_set": "tzcode.webhooks.get_expected_skill_set",
-    "issues.json": "tzcode.webhooks.query_issues"
+    "issues.json": "tzcode.webhooks.query_issues",
+    "frappe.core.doctype.user.user.impersonate": "tzcode.client.impersonate",
 }
 
 # Overriding Doctype Classes

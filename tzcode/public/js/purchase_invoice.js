@@ -24,9 +24,16 @@ frappe.ui.form.on("Purchase Invoice", {
         })
     },
     cost_center(frm){
-        $.map(frm.doc.items + frm.doc.items, item => {
-            item.cost_center = frm.doc.cost_center;
-        })
+        // OJO: antes decia `frm.doc.items + frm.doc.items`, que concatena los
+        // arrays como string y no actualizaba nada. Hay que recorrer items Y taxes
+        // y refrescar las grids para que el usuario vea el valor copiado.
+        if (!frm.doc.cost_center) return;
+        ["items", "taxes"].forEach(table => {
+            (frm.doc[table] || []).forEach(row => {
+                frappe.model.set_value(row.doctype, row.name, "cost_center", frm.doc.cost_center);
+            });
+            frm.refresh_field(table);
+        });
     },
     add_custom_buttons(frm) {
         if (frm.doc.docstatus !== 1) return;
