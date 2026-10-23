@@ -5,7 +5,7 @@ frappe.listview_settings["Upwork Job Posting"] = {
 			Reviewed: "orange",
 			"Proposal Drafted": "purple",
 			Applied: "green",
-			Skipped: "gray",
+			Skipped: "red",
 		};
 		return [__(doc.status), colors[doc.status] || "gray", "status,=," + doc.status];
 	},
