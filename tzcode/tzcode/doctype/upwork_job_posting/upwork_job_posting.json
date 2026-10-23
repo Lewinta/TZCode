@@ -1,0 +1,226 @@
+{
+ "actions": [],
+ "autoname": "field:upwork_job_id",
+ "creation": "2026-08-28 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "upwork_job_id",
+  "title",
+  "cb_0",
+  "status",
+  "job_url",
+  "sb_content",
+  "description",
+  "skills",
+  "sb_budget",
+  "job_type",
+  "hourly_min",
+  "hourly_max",
+  "cb_1",
+  "budget_min",
+  "budget_max",
+  "sb_client",
+  "client_country",
+  "client_total_spend",
+  "cb_2",
+  "client_payment_verified",
+  "sb_meta",
+  "posted_date",
+  "fetched_at",
+  "cb_3",
+  "content_purged",
+  "purged_at",
+  "sb_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "upwork_job_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Upwork Job ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "cb_0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "New",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "New\nReviewed\nProposal Drafted\nApplied\nSkipped"
+  },
+  {
+   "fieldname": "job_url",
+   "fieldtype": "Data",
+   "label": "Job URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "sb_content",
+   "fieldtype": "Section Break",
+   "label": "Posting"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Long Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "skills",
+   "fieldtype": "Small Text",
+   "label": "Skills"
+  },
+  {
+   "fieldname": "sb_budget",
+   "fieldtype": "Section Break",
+   "label": "Budget"
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Job Type",
+   "options": "\nHourly\nFixed"
+  },
+  {
+   "fieldname": "hourly_min",
+   "fieldtype": "Currency",
+   "label": "Hourly Min",
+   "options": "USD"
+  },
+  {
+   "fieldname": "hourly_max",
+   "fieldtype": "Currency",
+   "label": "Hourly Max",
+   "options": "USD"
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "budget_min",
+   "fieldtype": "Currency",
+   "label": "Budget Min",
+   "options": "USD"
+  },
+  {
+   "fieldname": "budget_max",
+   "fieldtype": "Currency",
+   "label": "Budget Max",
+   "options": "USD"
+  },
+  {
+   "fieldname": "sb_client",
+   "fieldtype": "Section Break",
+   "label": "Client"
+  },
+  {
+   "fieldname": "client_country",
+   "fieldtype": "Data",
+   "label": "Client Country"
+  },
+  {
+   "fieldname": "client_total_spend",
+   "fieldtype": "Currency",
+   "label": "Client Total Spend",
+   "options": "USD"
+  },
+  {
+   "fieldname": "cb_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "client_payment_verified",
+   "fieldtype": "Check",
+   "label": "Client Payment Verified"
+  },
+  {
+   "fieldname": "sb_meta",
+   "fieldtype": "Section Break",
+   "label": "Metadata"
+  },
+  {
+   "fieldname": "posted_date",
+   "fieldtype": "Datetime",
+   "label": "Posted Date"
+  },
+  {
+   "fieldname": "fetched_at",
+   "fieldtype": "Datetime",
+   "label": "Fetched At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Upwork-authored content has been stripped to comply with the 24 hour retention cap.",
+   "fieldname": "content_purged",
+   "fieldtype": "Check",
+   "label": "Content Purged",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purged_at",
+   "fieldtype": "Datetime",
+   "label": "Purged At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break",
+   "label": "My Notes"
+  },
+  {
+   "description": "Your own notes. Never purged.",
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-28 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Upwork Job Posting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "title,status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

@@ -1,0 +1,229 @@
+{
+ "actions": [],
+ "creation": "2026-08-28 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "connection_tb",
+  "enabled",
+  "cb_conn_0",
+  "last_poll_at",
+  "sb_credentials",
+  "client_id",
+  "client_secret",
+  "cb_conn_1",
+  "redirect_uri",
+  "sb_tokens",
+  "access_token",
+  "refresh_token",
+  "cb_conn_2",
+  "token_expires_at",
+  "filters_tb",
+  "filter_help",
+  "search_query",
+  "skills",
+  "cb_filter_0",
+  "min_hourly_rate",
+  "min_fixed_budget",
+  "max_results_per_poll",
+  "compliance_tb",
+  "compliance_help",
+  "retention_hours",
+  "cb_comp_0",
+  "notify_telegram",
+  "sb_status",
+  "last_error"
+ ],
+ "fields": [
+  {
+   "fieldname": "connection_tb",
+   "fieldtype": "Tab Break",
+   "label": "Connection"
+  },
+  {
+   "default": "0",
+   "description": "Master switch for the scheduled poll. Leave off until the API key is approved by Upwork.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_conn_0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_poll_at",
+   "fieldtype": "Datetime",
+   "label": "Last Poll At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_credentials",
+   "fieldtype": "Section Break",
+   "label": "OAuth Credentials"
+  },
+  {
+   "description": "Upwork API key (client id).",
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "cb_conn_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "https://bo.tzcode.tech/api/method/tzcode.upwork.oauth_callback",
+   "description": "Must match the Callback URL registered on the Upwork API key exactly.",
+   "fieldname": "redirect_uri",
+   "fieldtype": "Data",
+   "label": "Redirect URI"
+  },
+  {
+   "fieldname": "sb_tokens",
+   "fieldtype": "Section Break",
+   "label": "Tokens"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_conn_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "token_expires_at",
+   "fieldtype": "Datetime",
+   "label": "Access Token Expires At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "filters_tb",
+   "fieldtype": "Tab Break",
+   "label": "Search Filters"
+  },
+  {
+   "fieldname": "filter_help",
+   "fieldtype": "HTML",
+   "options": "<div class=\"alert alert-warning\">These filters are not only a quality setting. Upwork's API &amp; MCP Terms prohibit <b>Bulk Access</b> - retrieving all or substantially all of a category of job postings. Keeping the search narrow is what keeps this integration on the permitted side of that line. Do not widen these to match everything.</div>"
+  },
+  {
+   "default": "ERPNext Frappe",
+   "description": "Free-text search terms sent to Upwork.",
+   "fieldname": "search_query",
+   "fieldtype": "Small Text",
+   "label": "Search Query"
+  },
+  {
+   "default": "erpnext, frappe, python, full stack development, devops",
+   "description": "Comma separated. A posting must match at least one to be ingested.",
+   "fieldname": "skills",
+   "fieldtype": "Small Text",
+   "label": "Skills"
+  },
+  {
+   "fieldname": "cb_filter_0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "35",
+   "description": "USD. Hourly postings below this are skipped.",
+   "fieldname": "min_hourly_rate",
+   "fieldtype": "Currency",
+   "label": "Min Hourly Rate"
+  },
+  {
+   "default": "2000",
+   "description": "USD. Fixed-price postings below this are skipped.",
+   "fieldname": "min_fixed_budget",
+   "fieldtype": "Currency",
+   "label": "Min Fixed Budget"
+  },
+  {
+   "default": "50",
+   "description": "Hard ceiling on postings pulled per poll. Guards against Bulk Access.",
+   "fieldname": "max_results_per_poll",
+   "fieldtype": "Int",
+   "label": "Max Results Per Poll"
+  },
+  {
+   "fieldname": "compliance_tb",
+   "fieldtype": "Tab Break",
+   "label": "Compliance"
+  },
+  {
+   "fieldname": "compliance_help",
+   "fieldtype": "HTML",
+   "options": "<div class=\"alert alert-info\">Upwork API Terms &sect;7 and API &amp; MCP Terms &sect;8.3 cap caching of Upwork Content at <b>24 hours</b>, after which it must be permanently deleted, and forbid restarting the timer by re-fetching. The hourly purge enforces this: postings still marked New, Reviewed or Skipped are deleted outright; those you acted on (Proposal Drafted, Applied) keep only your own notes, status and the job link, with all Upwork-authored text stripped.</div>"
+  },
+  {
+   "default": "24",
+   "description": "Cannot exceed 24. Enforced on save.",
+   "fieldname": "retention_hours",
+   "fieldtype": "Int",
+   "label": "Retention Hours"
+  },
+  {
+   "fieldname": "cb_comp_0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Send new matches to the Telegram bot configured in Tz Settings.",
+   "fieldname": "notify_telegram",
+   "fieldtype": "Check",
+   "label": "Notify via Telegram"
+  },
+  {
+   "fieldname": "sb_status",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-28 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TZCode",
+ "name": "Upwork Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
