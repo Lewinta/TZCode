@@ -89,25 +89,40 @@ def execute(query, variables, access_token):
 	return payload.get("data") or {}
 
 
-def search_jobs(settings, access_token):
-	"""Run one narrow, filtered search and return the raw nodes.
+def get_search_queries(settings):
+	"""One search per non-empty line of search_query."""
+	lines = (settings.search_query or "").splitlines()
+	return [line.strip() for line in lines if line.strip()] or ["ERPNext OR Frappe"]
 
-	Deliberately a single page. Paginating through the marketplace is exactly
-	what the API & MCP Terms define as Bulk Access.
+
+def search_jobs(settings, access_token):
+	"""Run one narrow, filtered search per configured query and return the raw nodes.
+
+	Deliberately a single page per query. Paginating through the marketplace is
+	exactly what the API & MCP Terms define as Bulk Access.
 	"""
 	first = min(int(settings.max_results_per_poll or 50), 100)
 
-	variables = {
-		"marketPlaceJobFilter": {
-			"searchExpression_eq": settings.search_query or "ERPNext Frappe",
-			"pagination_eq": {"after": "0", "first": first},
-		},
-		"searchType": "USER_JOBS_SEARCH",
-		"sortAttributes": [{"field": "RECENCY"}],
-	}
+	nodes = []
+	seen = set()
 
-	data = execute(SEARCH_QUERY, variables, access_token)
-	search = (data or {}).get("marketplaceJobPostingsSearch") or {}
-	edges = search.get("edges") or []
+	for query in get_search_queries(settings):
+		variables = {
+			"marketPlaceJobFilter": {
+				"searchExpression_eq": query,
+				"pagination_eq": {"after": "0", "first": first},
+			},
+			"searchType": "USER_JOBS_SEARCH",
+			"sortAttributes": [{"field": "RECENCY"}],
+		}
 
-	return [edge.get("node") for edge in edges if edge and edge.get("node")]
+		data = execute(SEARCH_QUERY, variables, access_token)
+		search = (data or {}).get("marketplaceJobPostingsSearch") or {}
+
+		for edge in search.get("edges") or []:
+			node = (edge or {}).get("node")
+			if node and node.get("id") not in seen:
+				seen.add(node.get("id"))
+				nodes.append(node)
+
+	return nodes

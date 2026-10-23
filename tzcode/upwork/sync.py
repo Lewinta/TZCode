@@ -208,5 +208,34 @@ def purge_expired():
 				message=frappe.get_traceback(),
 			)
 
+	notes = _purge_digest_notes(cutoff)
+
 	frappe.db.commit()
-	return {"deleted": deleted, "purged": purged}
+	return {"deleted": deleted, "purged": purged, "notes": notes}
+
+
+# The AI triage routine emails its digest by creating a Note with this title
+# prefix (a Notification on Note sends it). The Note quotes Upwork Content, so
+# it falls under the same 24 hour cap as the postings themselves.
+DIGEST_NOTE_PREFIX = "Upwork para seguimiento"
+
+
+def _purge_digest_notes(cutoff):
+	names = frappe.get_all(
+		"Note",
+		filters={"title": ["like", DIGEST_NOTE_PREFIX + "%"], "creation": ["<", cutoff]},
+		pluck="name",
+	)
+
+	for name in names:
+		try:
+			frappe.delete_doc(
+				"Note", name, ignore_permissions=True, force=True, delete_permanently=True
+			)
+		except Exception:
+			frappe.log_error(
+				title="Upwork digest note purge failed for {0}".format(name),
+				message=frappe.get_traceback(),
+			)
+
+	return len(names)
