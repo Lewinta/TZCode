@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.utils import add_to_date, cint, flt, get_datetime, now_datetime
+from frappe.utils.data import convert_utc_to_system_timezone
 
 from tzcode.tzcode.doctype.upwork_job_posting.upwork_job_posting import (
 	ACTED_ON_STATUSES,
@@ -113,10 +114,19 @@ def _parse_node(node):
 		"client_country": location.get("country"),
 		"client_total_spend": flt(total_spent.get("rawValue")),
 		"client_payment_verified": 1 if verification == "VERIFIED" else 0,
-		"posted_date": node.get("publishedDateTime") or node.get("createdDateTime"),
+		"posted_date": _to_system_datetime(
+			node.get("publishedDateTime") or node.get("createdDateTime")
+		),
 		"fetched_at": now_datetime(),
 		"status": "New",
 	}
+
+
+def _to_system_datetime(value):
+	"""Upwork sends ISO 8601 with an offset, which MariaDB rejects as-is."""
+	if not value:
+		return None
+	return convert_utc_to_system_timezone(get_datetime(value)).replace(tzinfo=None)
 
 
 def _matches_filters(parsed, settings):
